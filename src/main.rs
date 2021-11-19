@@ -24,17 +24,6 @@ use image::{GenericImageView};
 // ./srset.sh [-hmz] [—n findname] [-q quality] [—t type] [-l legacysize] [-s sizes] [-o out path] [-f file hierarchy] file hierarchy
 
 //
-struct Options<'a> {
-    inpath: &'a Path,
-    outpath: &'a Path,
-    
-    extension: String,
-    
-    is_recurse: bool,
-    
-    is_test: bool,
-}
-
 
 
 
@@ -110,7 +99,7 @@ fn main() {
 /// \param dir          The path of the directory
 /// \param outpath      The path of the output directory
 /// \param is_recurse   Whether to recurse directory
-fn loop_path(dir: &Path, outpath: &Path, is_recurse: bool, is_test: bool, options: &Options)  -> io::Result<()>
+fn loop_path(dir: &Path, outpath: &Path, is_recurse: bool, is_test: bool)  -> io::Result<()>
 {
     
     if dir.is_dir() {
