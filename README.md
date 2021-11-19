@@ -36,8 +36,6 @@ t usually the largest payload of a web site or page. As it turns out, speed is U
 
 In comes the HTML5 `srcset` attribute to help, whether Mobile or desktop Web. The html `<img>` tag takes an optional set of images that should be scaled versions of the original. The Mobile or Web browser selects an image given its current width and resolution capabilities. 'srcset' recommends images that don't waste expensive Mobile bandwidth yet provide a image suitable for the device's resolution. In desktops the browser will select an image based on its current width (opposed to the device's width). In other words, the `srcset` attribute permits the use of an image that is not too big yet not too small. The `srcset` attribute is ignored and `src` is used in legacy browsers.
 
-In order to speed up the web further it is suggested that images are compressed. There is no hard recommendation; `convert` uses `92` if it cannot determine a best fit. That runs high on the side of a image quality but low on overall web page download speed; load test a site for a balance between speed and beauty. During conversion *srcset.sh* can interlace the image versions as suggested by webpagetest.org.
-
 ### Requirements
 
 
