@@ -19,7 +19,8 @@ struct ProgOptions {
     is_recurse: bool,
     is_test: bool,
     is_jobs: bool,
-    is_nested: bool
+    is_nested: bool,
+    is_dir: bool,
 }
 
 
@@ -28,7 +29,7 @@ struct ProgOptions {
 fn main() {
    
    // The defaults!
-    let mut inpath_str = ".".to_string();
+    let mut inpath_str = "".to_string();
     let mut outpath_str = "/tmp/srcset/".to_string();
     let mut extension = "".to_string();
     let mut sizes = "(min-width: 768px) 50vw, 100vw".to_string();
@@ -42,11 +43,11 @@ fn main() {
 
         args.set_description("srcset command-line utility");
 
-        args.refer(&mut inpath_str)
+/*        args.refer(&mut inpath_str)
                 .required()
                 .add_option(&["-f", "--file"], argparse::Store,
                 "Path (Filename or directory) of image");
- 
+*/
         args.refer(&mut outpath_str)
                 .add_option(&["-o", "--out"], argparse::Store,
                 "Output directory)");
@@ -75,25 +76,43 @@ fn main() {
                 .add_option(&["-z", "--test"], argparse::StoreTrue,
                 "Test run. Images are found but not created");
 
+        args.refer(&mut inpath_str)
+                .add_argument("file", argparse::Store,
+                "Path (Filename or directory) of image");
+
+
+
         args.parse_args_or_exit();
     }
+    
+//    println!("in:{}, out:{}, recurse:{}, ext:{}, sizes:{}, jobs:{}, nested:{}, test:{}", inpath_str, outpath_str, is_recurse, extension, sizes, is_jobs, is_nested, is_test);
     
     // Output must end in /
     if !outpath_str.ends_with("/") {  outpath_str.push_str("/"); }
 
+    if inpath_str == "" {
+        println!("File or directory argument is required.");
+        std::process::exit(1);
+    }
     let inpath = PathBuf::from(&inpath_str);
     
+    if is_nested && inpath.is_file() {
+        println!("A single file cannot use a nested directory. Remove the --nested option.");
+        std::process::exit(1);
+    }
     let outpath = PathBuf::from(&outpath_str);
     if outpath.is_file() {
-        println!("Selected outpath is a file");
+        println!("Selected outpath cannot be a file.");
         std::process::exit(1);
     }
 
-    let prog_options = ProgOptions{inpath, outpath, extension, sizes, is_recurse, is_jobs, is_nested, is_test};
+
+    
+    let prog_options = ProgOptions{inpath: inpath, outpath: outpath, extension: extension, sizes: sizes, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true};
 
     let inpath = Path::new(&inpath_str);
 
-    let result =
+    let _result =
         match inpath.is_dir()
         {
             true => loop_path(&inpath, &prog_options),
@@ -101,7 +120,7 @@ fn main() {
         };
     
     
-    println!("{:?}", result);
+    //println!("{:?}", result);
 
 }
 
@@ -172,15 +191,15 @@ fn process_image(path: &Path, prog_options: &ProgOptions) -> anyhow::Result<()>
     let ext = use_fileext(&path, &prog_options.extension);
 
     let np = match prog_options.is_nested {
-        true =>
+        true => {
                 path_from_strs_dest(
                         prog_options.outpath.to_str().unwrap(),
                         &path.strip_prefix(prog_options.inpath.as_path()).unwrap().parent().unwrap().to_str().unwrap(),
                         &path.file_stem().and_then(OsStr::to_str).unwrap(),
                         &"legacy",
                         ext
-                        ),
-        
+                        )
+                },
         _ =>    path_from_strs(
                     &prog_options.outpath.to_str().unwrap(),
                     &path.file_stem().and_then(OsStr::to_str).unwrap(),
@@ -239,7 +258,7 @@ fn process_image(path: &Path, prog_options: &ProgOptions) -> anyhow::Result<()>
         std::fs::write(f, &tag)?;
     }
 
-    println!("Srcset tag: {}", tag);
+    println!("{}", tag);
     
     Ok(())
 }
@@ -311,18 +330,6 @@ fn path_from_strs(root: &str, parent: &str, filename: &str, ext: &str) -> PathBu
     let f = filename.to_owned() + "." + ext;
     pb.push(f);
     
-    println!("Creating Path: {:?}", pb);
-    pb
-}
-
-fn path_from_paths(root: &Path, parent: &Path, filename: &str, ext: &str) -> PathBuf {
-    let mut pb = PathBuf::new();
-    pb.push(root);
-    pb.push(parent);
-    
-    let f = filename.to_owned() + "." + ext;
-    pb.push(f);
-
     println!("Creating Path: {:?}", pb);
     pb
 }
