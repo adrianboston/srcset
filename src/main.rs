@@ -1,5 +1,5 @@
-//! \details The srcset utility generates multiple (eight) scaled versions of an image at particular breakpoints
-//!  those of 320,480,640,768,960,1024,1280,1440 pixels wide that match common Mobile and widescreen
+//! The srcset utility generates multiple (eight) scaled versions of an image at particular breakpoints
+//! those of 320,480,640,768,960,1024,1280,1440 pixels wide that match common Mobile and widescreen
 //! viewports using  convert utility and outputs the needed <img> tag.
 
 mod utils;

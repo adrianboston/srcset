@@ -285,12 +285,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "path-dsl"
-version = "0.6.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d19dd56d2bd4b2e19d415532597c1b0366f096212a27980ac4115f29ebe0c74"
-
-[[package]]
 name = "png"
 version = "0.16.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -358,13 +352,12 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "srcset"
-version = "0.1.0"
+version = "0.7.16"
 dependencies = [
  "anyhow",
  "argparse",
  "image",
  "lazy_static",
- "path-dsl",
  "rayon",
  "regex",
 ]

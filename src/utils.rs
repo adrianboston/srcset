@@ -37,7 +37,7 @@ pub fn mk_dir(p: &Path) {
         }
 }
 
-// Determine whether to use the filename extension or the provided str extension.
+/// Determine whether to use the filename extension or the provided str extension.
 #[inline]
 pub fn use_fileext<'a>(path: &'a Path, extension: &'a str) -> &'a str
 {
