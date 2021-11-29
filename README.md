@@ -54,8 +54,9 @@ In comes the HTML5 `srcset` attribute to help, whether Mobile or desktop Web. Th
 
 The utility resizes each image using the same compression as the original image; however, specify the desination type using the `-t` directive. *srcset* permits the use of an image in TIFF format -- that is often the second step after Nikon, Canon and other 'raw' native formats -- from which `convert` can generate the final HTML-ready images. Or you can stick with the tried JPEG, PNG and GIF.
 
+Due to the large number of resized images, they are organized into a file structure. The name of the directory matches the original filename. The name of each resized image contains the width of the image and placed into the directory from `320w` to `1440w`. The original file is copied, placed into the directory and renamed to `legacy`. Therefore, `srcset` will skip over any files named `legacy`, `320w`, `480w`,.... `1440w` to avoid duplicate work. 
 
-Due to the large number of resized images, they are organized into a file structure. The name of the directory matches the original file. The name of each resized image contains the width of the image and placed into the directory. The original file is copied and renamed to `legacy`. For example, given an image named `my_image` the following directory will be constructed.
+For example, given an image named `my_image` the following directory will be constructed.
 
 ```
 srcset my_image.jpg
@@ -78,11 +79,9 @@ The resulting tag is:
 <img src="my_image/legacy.jpg" srcset="my_image/320w.jpg 320w, my_image/480w.jpg 480w, my_image/640w.jpg 640w, my_image/768w.jpg 768w, my_image/960w.jpg 960w, my_image/1024w.jpg 1024w, my_image/1280w.jpg 1280w, my_image/1440w.png 1440w" sizes="(min-width: 768px) 50vw, 100vw" alt="A file named my_image">
 ```
 
-Warnings and errors can be piped into a file to avoid cluttering the console. The most common warning is skipping a file due to its small size less than the `-m` directive.
+Note that warnings / errors can be piped into a file. The most common warning is skipping a file due to its small size less than the `-m` directive.
 
-srcset examples/simple/test.png 2>srcset.err
-
-As a safeguard against specifying a previously scanned directory, `srcset` will skip over any files named `legacy`, `320w`, `480w`,.... `1440w`.
+`srcset examples/simple/test.png 2>srcset.err`
 
 
 ### Useful Resources
