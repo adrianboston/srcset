@@ -78,7 +78,7 @@ The resulting tag is:
 <img src="my_image/legacy.jpg" srcset="my_image/320w.jpg 320w, my_image/480w.jpg 480w, my_image/640w.jpg 640w, my_image/768w.jpg 768w, my_image/960w.jpg 960w, my_image/1024w.jpg 1024w, my_image/1280w.jpg 1280w, my_image/1440w.png 1440w" sizes="(min-width: 768px) 50vw, 100vw" alt="A file named my_image">
 ```
 
-Warnings and erros can be piped into a file to avoid cluttering the console. The most common warning is skipping a file due to its small size less than the `-m` directive.
+Warnings and errors can be piped into a file to avoid cluttering the console. The most common warning is skipping a file due to its small size less than the `-m` directive.
 
 srcset examples/simple/test.png 2>srcset.err
 

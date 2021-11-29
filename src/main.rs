@@ -164,7 +164,7 @@ fn loop_path(dir: &Path, prog_options: &ProgOptions)  -> anyhow::Result<()>
                 {
                     None => (),
                     Some("jpg") | Some("JPG") | Some("png") | Some("PNG")
-                        | Some("tiff") | Some("TIFF")
+                        | Some("tiff") | Some("TIFF") | Some("tif") | Some("TIF")
                             => {
                                     if path.metadata()?.len() > prog_options.min_size
                                     {
