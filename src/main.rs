@@ -1,6 +1,6 @@
 /*
 
-The srcset utility generates multiple (eight) scaled versions of an image at particular breakpoints -- 320,480,640,768,960,1024,1280,1440 pixels wide -- that match common Mobile and widescreen viewports using Imagemagick's convert utility and outputs the needed <img> tag.
+The srcset utility generates multiple (eight) scaled versions of an image at particular breakpoints -- 320,480,640,768,960,1024,1280,1440 pixels wide -- that match common Mobile and widescreen viewports using  convert utility and outputs the needed <img> tag.
 
 */
 
@@ -21,6 +21,8 @@ struct ProgOptions {
     is_jobs: bool,
     is_nested: bool,
     is_dir: bool,
+    min_size: u64,
+    is_verbose: bool
 }
 
 
@@ -37,6 +39,10 @@ fn main() {
     let mut is_jobs = false;
     let mut is_nested = false;
     let mut is_test = false;
+    let mut is_verbose = false;
+
+    
+    let mut min_kb = 100;
 
     {
         let mut args = argparse::ArgumentParser::new();
@@ -64,6 +70,10 @@ fn main() {
                 .add_option(&["-s", "--sizes"], argparse::Store,
                 "The src viewport sizes tag as string");
 
+        args.refer(&mut min_kb)
+                .add_option(&["-m", "--min"], argparse::Store,
+                "Minimum size of image to process in kb, otherwise skip");
+
         args.refer(&mut is_jobs)
                 .add_option(&["-j", "--job"], argparse::StoreTrue,
                 "Use parallel jobs");
@@ -76,6 +86,10 @@ fn main() {
                 .add_option(&["-z", "--test"], argparse::StoreTrue,
                 "Test run. Images are found but not created");
 
+        args.refer(&mut is_verbose)
+                .add_option(&["-v", "--verbose"], argparse::StoreTrue,
+                "Verbose output");
+
         args.refer(&mut inpath_str)
                 .add_argument("file", argparse::Store,
                 "Path (Filename or directory) of image");
@@ -84,8 +98,6 @@ fn main() {
 
         args.parse_args_or_exit();
     }
-    
-//    println!("in:{}, out:{}, recurse:{}, ext:{}, sizes:{}, jobs:{}, nested:{}, test:{}", inpath_str, outpath_str, is_recurse, extension, sizes, is_jobs, is_nested, is_test);
     
     // Output must end in /
     if !outpath_str.ends_with("/") {  outpath_str.push_str("/"); }
@@ -96,9 +108,9 @@ fn main() {
     }
     let inpath = PathBuf::from(&inpath_str);
     
-    if is_nested && inpath.is_file() {
-        println!("A single file cannot use a nested directory. Remove the --nested option.");
-        std::process::exit(1);
+    if inpath.is_file() {
+        is_nested = false;
+        is_recurse = false;
     }
     let outpath = PathBuf::from(&outpath_str);
     if outpath.is_file() {
@@ -107,8 +119,7 @@ fn main() {
     }
 
 
-    
-    let prog_options = ProgOptions{inpath: inpath, outpath: outpath, extension: extension, sizes: sizes, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true};
+    let prog_options = ProgOptions{inpath: inpath, outpath: outpath, extension: extension, sizes: sizes, min_size: min_kb * 1024, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true, is_verbose: is_verbose};
 
     let inpath = Path::new(&inpath_str);
 
@@ -132,7 +143,10 @@ fn main() {
 
 fn loop_path(dir: &Path, prog_options: &ProgOptions)  -> anyhow::Result<()>
 {
-    
+    lazy_static::lazy_static! {
+        static ref RE: regex::Regex = regex::Regex::new("320w|480w|640w|768w|960w|1024w|1280w|1440w|legacy").unwrap();
+    }
+
     if dir.is_dir() {
         for entry in std::fs::read_dir(dir)? {
             let entry = entry?;
@@ -146,9 +160,23 @@ fn loop_path(dir: &Path, prog_options: &ProgOptions)  -> anyhow::Result<()>
                     None => (),
                     Some("jpg") | Some("JPG") | Some("png") | Some("PNG")
                         | Some("tiff") | Some("TIFF")
-                            => match process_image(&path, &prog_options) {
-                                    Err(e) => println!("\nERROR: processing image {:?} {:?}\n", path, e),
-                                    _ => (),
+                            => {
+                                    if path.metadata()?.len() > prog_options.min_size
+                                    {
+                                        let nm = path.file_stem().and_then(OsStr::to_str).unwrap();
+                                    
+                                        if !RE.is_match(nm)
+                                        {
+                                            match process_image(&path, &prog_options) {
+                                                Err(e) => eprintln!("WARNING: Processing error {:?} {:?}", path, e),
+                                                _ => (),
+                                        }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        eprintln!("WARNING: Skipping {:?}", path);
+                                    }
                                 }
                                 ,
                     _ => (),
@@ -178,15 +206,12 @@ fn process_image(path: &Path, prog_options: &ProgOptions) -> anyhow::Result<()>
     // `open` returns a `DynamicImage` on success.
     let img = image::open(path)?;
 
+    println!("<< {:?}", path.strip_prefix(prog_options.inpath.as_path()).unwrap());
+
     let wh = img.dimensions();
     let (w,h) = wh;
 
     let aspect =  w as f32 / h as f32;
-
-    let x = path.strip_prefix(prog_options.inpath.as_path());
-    let y = path.file_stem().unwrap();
-
-    println!("Final {:?} {:?}", x, y);
 
     let ext = use_fileext(&path, &prog_options.extension);
 
@@ -207,6 +232,8 @@ fn process_image(path: &Path, prog_options: &ProgOptions) -> anyhow::Result<()>
                     &ext
                     ),
     };
+    
+    if prog_options.is_verbose { println!(">> {:?}", np);}
 
     if !prog_options.is_test {
         mk_dir(&np);
@@ -218,12 +245,13 @@ fn process_image(path: &Path, prog_options: &ProgOptions) -> anyhow::Result<()>
 
     match prog_options.is_jobs {
         // The following uses rayon parallel processes
-        true =>
-            sizes.par_iter().for_each( |sz| scale_and_save(&path, &prog_options.outpath, &img, *sz, (*sz as f32 / aspect) as i32, &prog_options.extension, &prog_options) ),
+        true => {
+            sizes.par_iter().for_each( |sz| scale_and_save(&path, &prog_options.outpath, &img, *sz, (*sz as f32 / aspect) as i32, &prog_options.extension, &prog_options).unwrap() );
+            },
 
         false =>
             for n in sizes {
-                scale_and_save(&path, &prog_options.outpath, &img, n, (n as f32 / aspect) as i32, &prog_options.extension, &prog_options);
+                scale_and_save(&path, &prog_options.outpath, &img, n, (n as f32 / aspect) as i32, &prog_options.extension, &prog_options)?;
             },
      }
 
@@ -253,12 +281,13 @@ fn process_image(path: &Path, prog_options: &ProgOptions) -> anyhow::Result<()>
                     ),
     };
     
-    
+    if prog_options.is_verbose { println!(">> {:?}", f);}
+
+    println!("\n{}\n\n", tag);
+
     if !prog_options.is_test {
         std::fs::write(f, &tag)?;
     }
-
-    println!("{}", tag);
     
     Ok(())
 }
@@ -276,7 +305,8 @@ fn process_image(path: &Path, prog_options: &ProgOptions) -> anyhow::Result<()>
 
 
 fn scale_and_save(path: &Path, outpath: &Path,
-        img: &image::DynamicImage, nwidth: i32, nheight: i32, ext: &str, prog_options: &ProgOptions )
+        img: &image::DynamicImage, nwidth: i32, nheight: i32,
+        ext: &str, prog_options: &ProgOptions ) -> anyhow::Result<()>
 {
     // Filename only with no extension
     let file_name = path.file_stem().and_then(OsStr::to_str).unwrap();
@@ -303,10 +333,14 @@ fn scale_and_save(path: &Path, outpath: &Path,
                         ),
     };
  
+     if prog_options.is_verbose { println!(">> {:?}", img_path);}
+
     if !prog_options.is_test {
         let scaled = img.resize_to_fill(nwidth as u32, nheight as u32, image::imageops::FilterType::Lanczos3);
-        scaled.save(&img_path).expect("\nERROR Image failed to write\n");
+        scaled.save(&img_path)?;
     }
+    
+    Ok(())
 }
 
 fn path_from_strs_dest(dest: &str, root: &str, parent: &str, filename: &str, ext: &str) -> PathBuf {
@@ -317,8 +351,6 @@ fn path_from_strs_dest(dest: &str, root: &str, parent: &str, filename: &str, ext
     
     let f = filename.to_owned() + "." + ext;
     pb.push(f);
-    
-    println!("Creating Path: {:?}", pb);
     pb
 }
 
@@ -329,8 +361,6 @@ fn path_from_strs(root: &str, parent: &str, filename: &str, ext: &str) -> PathBu
     
     let f = filename.to_owned() + "." + ext;
     pb.push(f);
-    
-    println!("Creating Path: {:?}", pb);
     pb
 }
 

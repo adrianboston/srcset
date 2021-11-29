@@ -26,7 +26,7 @@ The options are as follows:
 
 -j  whether to use parallel or threaded **jobs** on image conversion.
 
--n  use a **nested** directory hierarchy on the output.
+-n  use a **nested** directory hierarchy on the output. ignored for single file.
 
 -z  run a test or dry run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
 
@@ -43,6 +43,28 @@ In addition and of interest, *srcset* permits the use of an image in its largest
 Images are important UI/UX aspects but usually the largest payload of a web site or page. As it turns out, speed is User Experience too. Google suggests that a web page load in under 3 seconds or users will abandon the site. Amazon correctly measures this in amount of dollars lost per second. With Mobile the situation is aggravated: the connection is slower and expensive; users are even more likely to abandon the site.
 
 In comes the HTML5 `srcset` attribute to help, whether Mobile or desktop Web. The html `<img>` tag takes an optional set of images that should be scaled versions of the original. The Mobile or Web browser selects an image given its current width and resolution capabilities. 'srcset' recommends images that don't waste expensive Mobile bandwidth yet provide a image suitable for the device's resolution. In desktops the browser will select an image based on its current width (opposed to the device's width). In other words, the `srcset` attribute permits the use of an image that is not too big yet not too small. The `srcset` attribute is ignored and `src` is used in legacy browsers.
+
+## Functions
+
+`srcset` requires a file path, whether filename or file hierarcy. If a filename, that single file will resized. If a file hierarchy, the files within that directory will be resized. Specifying the option, `r` the utility will walk the file hierarchy resizing any found images.
+
+The resized images are held into their own file directory; the name of the directory matches the original file. The name of each resized image contains the width of the image and placed into the directory. The original file is copied and renamed to `legacy`. For example, given an image named `my_image` the following directory will be constructed.
+
+```
+- my_image/
+        legacy.jpg
+        320w.jpg
+        480w.jpg
+        640w.jpg
+        768w.jpg
+        960w.jpg
+        1024w.jpg
+        1280w.jpg
+        1440w.jpg
+```
+
+The file hierarchy makes it easy to handle the large number of resized images required by the srcset tag.
+
 
 
 ### Useful Resources
