@@ -4,9 +4,9 @@
 
 ## SYNOPSIS
 
-`./srset [-rjnzh] [-q quality] [—t type] [-s sizes] [-o out path] filename`
+`./srset [-rjnvzh] [—t type] [-s sizes] [-o outpath] filename`
 
-`./srset [-rjnzh] [-q quality] [—t type] [-s sizes] [-o out path] file hierarchy`
+`./srset [-rjnvzh] [—t type] [-s sizes] [-o outpath] file hierarchy`
 
 ## DESCRIPTION
 
@@ -18,9 +18,11 @@ The options are as follows:
 
 -r  **recurse** the provided directory. ignored for single file.
 
--o  an **output** directory for the resized image. Otherwise the files are saved to the directory of the specified input file path. defaults to /`tmp/srcset/`
+-o  an **output** directory for the resized image. defaults to /`tmp/srcset/`
 
 -t  the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
+
+-m  the minimum size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kilobyes. The default is `50`.
 
 -s  the sizes tag used in the **srcset** image tag. defaults to `(min-width: 768px) 50vw, 100vw`
 
@@ -30,27 +32,34 @@ The options are as follows:
 
 -z  run a test or dry run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
 
+-v  use verbose output.
+
 -h   display the help.
 
-## The problem
+## THE PROBLEM
 
 Generating multiple responsive images using Photoshop, Lightroom or other GUI application is an irksome task for opposable-thumbed humans. Further, the needed `<img>` tag referencing multiple images in the `srcset` attribute is long and tedious to generate. On the other hand, the sweet RUSTy *srcset* is a generator that can be be easily added into a automated build workflow. And that long `<img>` tag with the full set of `srcset` images is the standard output which can then be dropped into the target html file(s).
 
-In addition and of interest, *srcset* permits the use of an image in its largest and highest resolution format TIFF format -- that is often the second step after Nikon, Canon and other 'raw' native formats -- from which `convert` can generate the final HTML-ready images. Or you can stick with the tried JPEG, PNG and GIF.
-
-## Background
+## BACKGROUND
 
 Images are important UI/UX aspects but usually the largest payload of a web site or page. As it turns out, speed is User Experience too. Google suggests that a web page load in under 3 seconds or users will abandon the site. Amazon correctly measures this in amount of dollars lost per second. With Mobile the situation is aggravated: the connection is slower and expensive; users are even more likely to abandon the site.
 
 In comes the HTML5 `srcset` attribute to help, whether Mobile or desktop Web. The html `<img>` tag takes an optional set of images that should be scaled versions of the original. The Mobile or Web browser selects an image given its current width and resolution capabilities. 'srcset' recommends images that don't waste expensive Mobile bandwidth yet provide a image suitable for the device's resolution. In desktops the browser will select an image based on its current width (opposed to the device's width). In other words, the `srcset` attribute permits the use of an image that is not too big yet not too small. The `srcset` attribute is ignored and `src` is used in legacy browsers.
 
-## Functions
+## USE
 
-`srcset` requires a file path, whether filename or file hierarcy. If a filename, that single file will resized. If a file hierarchy, the files within that directory will be resized. Specifying the option, `r` the utility will walk the file hierarchy resizing any found images.
+`srcset` is built using Rust known for its speed plus it leverages modern multi-core architectures. Use the `-j` directive to turn on parallel jobs.
 
-The resized images are held into their own file directory; the name of the directory matches the original file. The name of each resized image contains the width of the image and placed into the directory. The original file is copied and renamed to `legacy`. For example, given an image named `my_image` the following directory will be constructed.
+`srcset` requires a file path, whether filename or file hierarcy. If a filename, that single file will resized. If a file hierarchy, the files within that directory will be resized. Specifying the option `r` it will walk the file hierarchy resizing any found images.
+
+The utility resizes each image using the same compression as the original image; however, specify the desination type using the `-t` directive. *srcset* permits the use of an image in TIFF format -- that is often the second step after Nikon, Canon and other 'raw' native formats -- from which `convert` can generate the final HTML-ready images. Or you can stick with the tried JPEG, PNG and GIF.
+
+
+Due to the large number of resized images, they are organized into a file structure. The name of the directory matches the original file. The name of each resized image contains the width of the image and placed into the directory. The original file is copied and renamed to `legacy`. For example, given an image named `my_image` the following directory will be constructed.
 
 ```
+srcset my_image.jpg
+
 - my_image/
         legacy.jpg
         320w.jpg
@@ -63,8 +72,17 @@ The resized images are held into their own file directory; the name of the direc
         1440w.jpg
 ```
 
-The file hierarchy makes it easy to handle the large number of resized images required by the srcset tag.
+The resulting tag is:
 
+```
+<img src="my_image/legacy.jpg" srcset="my_image/320w.jpg 320w, my_image/480w.jpg 480w, my_image/640w.jpg 640w, my_image/768w.jpg 768w, my_image/960w.jpg 960w, my_image/1024w.jpg 1024w, my_image/1280w.jpg 1280w, my_image/1440w.png 1440w" sizes="(min-width: 768px) 50vw, 100vw" alt="A file named my_image">
+```
+
+Warnings and erros can be piped into a file to avoid cluttering the console. The most common warning is skipping a file due to its small size less than the `-m` directive.
+
+srcset examples/simple/test.png 2>srcset.err
+
+As a safeguard against specifying a previously scanned directory, `srcset` will skip over any files named `legacy`, `320w`, `480w`,.... `1440w`.
 
 
 ### Useful Resources

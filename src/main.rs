@@ -14,6 +14,7 @@ use std::path::{Path, PathBuf};
 struct ProgOptions {
     inpath:  PathBuf,
     outpath: PathBuf,
+    is_file: bool,
     extension: String,
     sizes: String,
     is_recurse: bool,
@@ -33,6 +34,8 @@ fn main() {
    // The defaults!
     let mut inpath_str = "".to_string();
     let mut outpath_str = "/tmp/srcset/".to_string();
+    
+    let mut is_file = false;
     let mut extension = "".to_string();
     let mut sizes = "(min-width: 768px) 50vw, 100vw".to_string();
     let mut is_recurse = false;
@@ -111,7 +114,9 @@ fn main() {
     if inpath.is_file() {
         is_nested = false;
         is_recurse = false;
+        is_file = true;
     }
+    
     let outpath = PathBuf::from(&outpath_str);
     if outpath.is_file() {
         println!("Selected outpath cannot be a file.");
@@ -119,7 +124,7 @@ fn main() {
     }
 
 
-    let prog_options = ProgOptions{inpath: inpath, outpath: outpath, extension: extension, sizes: sizes, min_size: min_kb * 1024, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true, is_verbose: is_verbose};
+    let prog_options = ProgOptions{inpath: inpath, outpath: outpath, is_file: is_file, extension: extension, sizes: sizes, min_size: min_kb * 1024, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true, is_verbose: is_verbose};
 
     let inpath = Path::new(&inpath_str);
 
@@ -206,8 +211,12 @@ fn process_image(path: &Path, prog_options: &ProgOptions) -> anyhow::Result<()>
     // `open` returns a `DynamicImage` on success.
     let img = image::open(path)?;
 
-    println!("<< {:?}", path.strip_prefix(prog_options.inpath.as_path()).unwrap());
-
+    if prog_options.is_file {
+        println!("<< {:?}", path);
+    } else {
+        println!("<< {:?}", path.strip_prefix(prog_options.inpath.as_path()).unwrap());
+    }
+    
     let wh = img.dimensions();
     let (w,h) = wh;
 
