@@ -4,9 +4,9 @@
 
 ## SYNOPSIS
 
-`./srset [-rjnvzh] [—t type] [-s sizes] [-o outpath] filename`
+`./srset [-rjnvqzh] [—t type] [-s sizes] [-o outpath] filename`
 
-`./srset [-rjnvzh] [—t type] [-s sizes] [-o outpath] file hierarchy`
+`./srset [-rjnvqzh] [—t type] [-s sizes] [-o outpath] file hierarchy`
 
 ## DESCRIPTION
 
@@ -16,25 +16,27 @@ A file path, whether filename or file hierarcy is required. Specify the path (fi
 
 The options are as follows:
 
--r  **recurse** the provided directory. ignored for single file.
+-r  --recurse  **recurse** the provided directory. ignored for single file.
 
--o  an **output** directory for the resized image. defaults to /`tmp/srcset/`
+-o  --out       the **output** directory for the resized image. defaults to /`tmp/srcset/`
 
--t  the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
+-t  --type      the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
 
--m  the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kilobyes. The default is `50`.
+-m  --min     set the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kilobytes. The default is `100` (aka  a min of `102400` bytes). 
 
--s  the sizes tag used in the **srcset** image tag. defaults to `(min-width: 768px) 50vw, 100vw`
+-s  --size      the **sizes** tag used in the srcset image tag. defaults to `(min-width: 768px) 50vw, 100vw`.
 
--j  whether to use parallel or threaded **jobs** on image conversion.
+-j  --jobs      whether to use parallel or threaded **jobs** on image conversion.
 
--n  use a **nested** directory hierarchy on the output. ignored for single file.
+-n  --nest     use a **nested** directory hierarchy on the output. ignored for single file.
 
--z  run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
+-z  --test      run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
 
--v  use verbose output.
+-v   --verbose   use **verbose** output.
 
--h   display the help.
+-q  --quiet     **quiet** the errors. much the same as sending error to null, `2>/dev/null` 
+
+-h --help        display the **help**.
 
 ## THE PROBLEM
 

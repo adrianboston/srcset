@@ -30,7 +30,7 @@ The options are as follows:
 
 -t  the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
 
--m  the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kilobyes. The default is `50`.
+-m  the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kb. The default is `100`
 
 -s  the sizes tag used in the **srcset** image tag. defaults to `(min-width: 768px) 50vw, 100vw`
 
@@ -105,6 +105,7 @@ fn main() {
     let mut is_nested = false;
     let mut is_test = false;
     let mut is_verbose = false;
+    let mut is_quiet = false;
 
     
     let mut min_kb = 100;
@@ -150,6 +151,10 @@ fn main() {
                 .add_option(&["-v", "--verbose"], argparse::StoreTrue,
                 "Verbose output");
 
+        args.refer(&mut is_quiet)
+                .add_option(&["-q", "--quiet"], argparse::StoreTrue,
+                "Quiet errors");
+
         args.refer(&mut inpath_str)
                 .add_argument("file", argparse::Store,
                 "Path (Filename or directory) of image");
@@ -158,7 +163,7 @@ fn main() {
         args.parse_args_or_exit();
     }
     
-    // Output must end in /
+    // Output must end in `/` so simply append one.
     if !outpath_str.ends_with("/") {  outpath_str.push_str("/"); }
 
     if inpath_str == "" {
@@ -180,17 +185,19 @@ fn main() {
     }
 
 
-    let opts = Opts{inpath: inpath, outpath: outpath, is_file: is_file, extension: extension, sizes: sizes, min_size: min_kb * 1024, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true, is_verbose: is_verbose};
+    let opts = Opts{inpath: inpath, outpath: outpath, is_file: is_file, extension: extension, sizes: sizes, min_size: min_kb * 1024, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true, is_verbose: is_verbose, is_quiet: is_quiet};
 
+//    println!("Options {:?}", opts);
+    
     let inpath = Path::new(&inpath_str);
 
-    let _result =
+    let result =
         match inpath.is_dir()
         {
             true => walk_path(&inpath, &opts),
             _ => process_image(&inpath, &opts),
         };
     
-    //println!("{:?}", result);
+    println!("{:?}", result);
 }
 

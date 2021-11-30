@@ -16,5 +16,6 @@ pub struct Opts {
     pub is_nested: bool,
     pub is_dir: bool,
     pub min_size: u64,
-    pub is_verbose: bool
+    pub is_verbose: bool,
+    pub is_quiet: bool
 }
