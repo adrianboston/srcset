@@ -3,9 +3,11 @@
 
 use std::path::Path;
 use std::ffi::OsStr;
+use std::fs::DirEntry;
 
 use crate::opts::Opts;
 use crate::img::process_image;
+
 
 
 /// Walk a directory tree, hunting for jpg, png and tiff extensions
@@ -16,9 +18,22 @@ pub fn walk_path(dir: &Path, opts: &Opts)  -> anyhow::Result<()>
     }
 
     if dir.is_dir() {
-        for entry in std::fs::read_dir(dir)? {
-            let entry = entry?;
+
+         // An error here (permission denied) will bail the walk. Dont bail the walk. Instead continue to the parent
+        let rd = match std::fs::read_dir(dir) {
+            Ok(t) => t,
+            Err(e) => { if !opts.is_quiet{eprintln!("WARNING: Processing error {:?}", e);} return Ok(())},
+        };
+
+        for entry in rd {
+            //let dir = entry;
+            let entry = match entry {
+                Ok(entry) => entry,
+                Err(e) => { if !opts.is_quiet{eprintln!("WARNING: Processing error {:?}", e)}; continue;},
+            };
+
             let path = entry.path();
+
             if opts.is_recurse && path.is_dir() {
                 walk_path(&path, &opts)?;
             } else {
@@ -36,14 +51,14 @@ pub fn walk_path(dir: &Path, opts: &Opts)  -> anyhow::Result<()>
                                         if !RE.is_match(nm)
                                         {
                                             match process_image(&path, &opts) {
-                                                Err(e) => eprintln!("WARNING: Processing error {:?} {:?}", path, e),
+                                                Err(e) => { if !opts.is_quiet{eprintln!("WARNING: Processing error {:?} {:?}", path, e)}},
                                                 _ => (),
                                         }
                                         }
                                     }
                                     else
                                     {
-                                        eprintln!("WARNING: Skipping {:?}", path);
+                                        if !opts.is_quiet{eprintln!("WARNING: Skipping {:?}", path)};
                                     }
                                 }
                                 ,
@@ -55,5 +70,23 @@ pub fn walk_path(dir: &Path, opts: &Opts)  -> anyhow::Result<()>
         }
     }
 
+    Ok(())
+}
+
+#[allow(dead_code)]
+fn loop_dir(dir: &Path, cb: &dyn Fn(&DirEntry)) -> std::io::Result<()>
+{
+    if dir.is_dir() {
+        for entry in std::fs::read_dir(dir)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_dir() {
+                loop_dir(&path, cb)?;
+            } else {
+                //println!("File {:?}", entry);
+                cb(&entry);
+            }
+        }
+    }
     Ok(())
 }
