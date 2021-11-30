@@ -52,7 +52,7 @@ In comes the HTML5 `srcset` attribute to help, whether Mobile or desktop Web. Th
 
 `srcset` is designed for power Web designers, DevOps and Sysops that want to ensure the fastest response time out of ther wesites for their audience. If you read [Google's recommendations](https://developers.google.com/speed/) and [Test, Optimize. Repeat](https://www.webpagetest.org/) for Website request/response time then.. this utility is for you.  
 
-Of course, it can be used on single files and small directories but is really built for power users that need to quickly burn through tens, hundreds if not thousands of web images. 
+Of course, it can be used on single files and small directories but is really built to quickly burn through tens, hundreds if not thousands of web images. 
 
 Consider using the Mac OSX DMG for those of you on OSX and without the rust compiler. See the [release section](https://github.com/adrianboston/srcset/releases). Open the DMG and copy the executable to the /urs/local/bin directory. 
 
