@@ -1,4 +1,5 @@
-//! Walk a directory tree, hunting for jpg, png and tiff extensions
+
+//! Walk a directory tree, hunting for jpg, png and tiff extensions.
 
 use std::path::Path;
 use std::ffi::OsStr;

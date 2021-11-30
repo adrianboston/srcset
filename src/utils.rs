@@ -1,4 +1,5 @@
-//! A few file and path utilities
+
+//! A few utilities for creating paths and directories. 
 
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
