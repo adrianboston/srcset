@@ -34,7 +34,7 @@ The options are as follows:
 
 -v   --verbose   use **verbose** output.
 
--q  --quiet     **quiet** the errors. much the same as sending error to null, `2>/dev/null` 
+-q  --quiet     **quiet** the errors. much the same as piping error to null, `2>/dev/null` 
 
 -h --help        display the **help**.
 
@@ -48,9 +48,17 @@ Images are important UI/UX aspects but usually the largest payload of a web site
 
 In comes the HTML5 `srcset` attribute to help, whether Mobile or desktop Web. The html `<img>` tag takes an optional set of images that should be scaled versions of the original. The Mobile or Web browser selects an image given its current width and resolution capabilities. 'srcset' recommends images that don't waste expensive Mobile bandwidth yet provide a image suitable for the device's resolution. In desktops the browser will select an image based on its current width (opposed to the device's width). In other words, the `srcset` attribute permits the use of an image that is not too big yet not too small. The `srcset` attribute is ignored and `src` is used in legacy browsers.
 
+## AUDIENCE
+
+`srcset` is designed for power Web designers, DevOps and Sysops that want to ensure the fastest response time out of ther wesites for their audience. If you read [Google's recommendations](https://developers.google.com/speed/) and [Test, Optimize. Repeat](https://www.webpagetest.org/) for Website request/response time then.. this utility is for you.  
+
+Of course, it can be used on single files and small directories but is really built for power users that need to quickly burn through tens, hundreds if not thousands of web images. 
+
+Consider using the Mac OSX DMG for those of you on OSX and without the rust compiler. See the [release section](https://github.com/adrianboston/srcset/releases). Open the DMG and copy the executable to the /urs/local/bin directory. 
+
 ## USE
 
-`srcset` is built using Rust known for its speed plus it leverages modern multi-core architectures. Use the `-j` directive to turn on parallel jobs.
+`srcset` is built using Rust known for its speed plus it leverages modern multi-core architectures. Use the `-j` directive to turn on parallel jobs or tasks. 
 
 `srcset` requires a file path, whether filename or file hierarcy. If a filename, that single file will resized. If a file hierarchy, the files within that directory will be resized. Specifying the option `r` it will walk the file hierarchy resizing any found images.
 
