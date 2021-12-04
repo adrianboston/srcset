@@ -4,28 +4,15 @@
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
-/// Creates a std::path::Path from destination, root, parent, filename, and extension strs
+
 #[inline]
-pub fn path_from_strs_dest(dest: &str, root: &str, parent: &str, filename: &str, ext: &str) -> PathBuf {
+/// Creates a std::path::Path from an array of strings
+pub fn path_from_array(array: &[&str]) -> PathBuf {
     let mut pb = PathBuf::new();
-    pb.push(dest);
-    pb.push(root);
-    pb.push(parent);
 
-    let f = filename.to_owned() + "." + ext;
-    pb.push(f);
-    pb
-}
-
-/// Creates a std::path::Path from root, parent, filename, and extension strs
-#[inline]
-pub fn path_from_strs(root: &str, parent: &str, filename: &str, ext: &str) -> PathBuf {
-    let mut pb = PathBuf::new();
-    pb.push(root);
-    pb.push(parent);
-
-    let f = filename.to_owned() + "." + ext;
-    pb.push(f);
+    for s in array {
+        pb.push(s);
+    }
     pb
 }
 
@@ -40,11 +27,11 @@ pub fn mk_dir(p: &Path) {
 
 /// Determine whether to use the filename extension or the provided str extension.
 #[inline]
-pub fn use_fileext<'a>(path: &'a Path, extension: &'a str) -> &'a str
+pub fn use_fileext<'a>(path: &'a Path, ext: &'a str) -> &'a str
 {
-    match extension
+    match ext
     {
         "" => path.extension().and_then(OsStr::to_str).unwrap(),
-        _ => extension,
+        _ => ext,
     }
 }
