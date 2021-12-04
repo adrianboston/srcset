@@ -28,7 +28,9 @@ The options are as follows:
 
 -j  --jobs      whether to use parallel or threaded **jobs** on image conversion.
 
--n  --nest     use a **nested** directory hierarchy on the output. ignored for single file.
+-n  --nest     use a **nested** directory hierarchy on the output, otherwise it is flat. ignored for single file.
+
+-p --prefix   add a string prefix to the filenames within the <srcset/> tag.  
 
 -z  --test      run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
 
@@ -50,9 +52,9 @@ In comes the HTML5 `srcset` attribute to help, whether Mobile or desktop Web. Th
 
 ## AUDIENCE
 
-`srcset` is designed for power Web designers, DevOps and Sysops that want to ensure the fastest response time out of ther wesites for their audience. If you read [Google's recommendations](https://developers.google.com/speed/) and [Test, Optimize. Repeat](https://www.webpagetest.org/) for Website request/response time then.. this utility is for you.  
+`srcset` is designed for power Web designers, DevOps and Sysops that want to ensure the fastest response time out of ther wesites for their audience. If you read [Google's recommendations](https://developers.google.com/speed/) and [Test, Optimize. Repeat](https://www.webpagetest.org/) for Website request/response time then this utility is for you.  
 
-Of course, it can be used on single files and small directories but is really built to quickly burn through tens, hundreds if not thousands of web images. 
+Of course, it can be used on single files and small directories but it's built to quickly burn through tens, hundreds if not thousands of web images. 
 
 Consider using the Mac OSX DMG for those of you on OSX and without the rust compiler. See the [release section](https://github.com/adrianboston/srcset/releases). Open the DMG and copy the executable to the /urs/local/bin directory. 
 
