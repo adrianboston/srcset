@@ -3,10 +3,12 @@
 
 use std::path::PathBuf;
 
+
 #[derive(Debug)]
 pub struct Opts {
     pub inpath:  PathBuf,
     pub outpath: PathBuf,
+    pub prefix: String,
     pub is_file: bool,
     pub extension: String,
     pub sizes: String,
@@ -17,5 +19,14 @@ pub struct Opts {
     pub is_dir: bool,
     pub min_size: u64,
     pub is_verbose: bool,
-    pub is_quiet: bool
+    pub is_quiet: bool,
+}
+
+
+#[derive(Debug)]
+pub struct Metrics {
+    pub count: u32,
+    pub resized: u32,
+    pub traversed: u32,
+    pub skipped: u32
 }
