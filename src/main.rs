@@ -24,23 +24,27 @@ A file path, whether filename or file hierarcy is required. Specify the path (fi
 
 The options are as follows:
 
--r  **recurse** the provided directory. ignored for single file.
+-r --recurse **recurse** the provided path. ignored for single file.
 
--o  an **output** directory for the resized image. defaults to /`tmp/srcset/`
+-o --out an **output** directory for the resized image. defaults to /`tmp/srcset/`
 
--t  the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
+-t --type the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
 
--m  the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kb. The default is `100`
+-m --min the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kb. The default is `100`
 
--s  the sizes tag used in the **srcset** image tag. defaults to `(min-width: 768px) 50vw, 100vw`
+-s --size the sizes tag used in the **srcset** image tag. defaults to `(min-width: 768px) 50vw, 100vw`
 
--j  whether to use parallel or threaded **jobs** on image conversion.
+-j --jobs whether to use parallel or threaded **jobs** on image conversion.
 
--n  use a **nested** directory hierarchy on the output. ignored for single file.
+-n --nest use a **nested** directory hierarchy on the output, otherwise it is flat. ignored for single file.
 
--z  run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
+-p --prefix add a string prefix to the filenames within the <srcset/> tag.
 
--v  use verbose output.
+-z --test run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
+
+-v --verbose use verbose output.
+
+-q  --quiet **quiet** the errors. much the same as piping error to null, `2>/dev/null`
 
 -h   display the help.
 
@@ -85,8 +89,9 @@ mod img;
 mod walk;
 
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 
-use crate::opts::Opts;
+use crate::opts::{Opts, Metrics};
 use crate::img::process_image;
 use crate::walk::walk_path;
 
@@ -99,6 +104,8 @@ fn main() {
     
     let mut is_file = false;
     let mut extension = "".to_string();
+    let mut prefix = "".to_string();
+
     let mut sizes = "(min-width: 768px) 50vw, 100vw".to_string();
     let mut is_recurse = false;
     let mut is_jobs = false;
@@ -106,8 +113,6 @@ fn main() {
     let mut is_test = false;
     let mut is_verbose = false;
     let mut is_quiet = false;
-
-    
     let mut min_kb = 100;
 
     {
@@ -126,6 +131,10 @@ fn main() {
         args.refer(&mut extension)
                 .add_option(&["-t", "--type"], argparse::Store,
                 "Output filetype (jpg, png, etc)");
+
+        args.refer(&mut prefix)
+                .add_option(&["-p", "--prefix"], argparse::Store,
+                "Prefix added to the srcset tag, such as webroot");
 
         args.refer(&mut sizes)
                 .add_option(&["-s", "--sizes"], argparse::Store,
@@ -184,20 +193,24 @@ fn main() {
         std::process::exit(1);
     }
 
-
-    let opts = Opts{inpath: inpath, outpath: outpath, is_file: is_file, extension: extension, sizes: sizes, min_size: min_kb * 1024, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true, is_verbose: is_verbose, is_quiet: is_quiet};
+    let opts = Opts{inpath: inpath, outpath: outpath, is_file: is_file, extension: extension, prefix: prefix, sizes: sizes, min_size: min_kb * 1024, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true, is_verbose: is_verbose, is_quiet: is_quiet};
+    
+    let mut m = Metrics{count: 0, resized: 0, traversed: 0, skipped: 0 };
 
 //    println!("Options {:?}", opts);
     
     let inpath = Path::new(&inpath_str);
 
-    let result =
+    let start = Instant::now();
+    let _result =
         match inpath.is_dir()
         {
-            true => walk_path(&inpath, &opts),
-            _ => process_image(&inpath, &opts),
+            true => walk_path(&inpath, &opts, &mut m),
+            _ => process_image(&inpath, &opts, &mut m),
         };
+    let duration = start.elapsed();
     
-    println!("{:?}", result);
+    println!("{:?}", m);
+    println!("{:?}", duration);
 }
 
