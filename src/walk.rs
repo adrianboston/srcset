@@ -12,8 +12,8 @@ use crate::opts::{Opts, Metrics};
 use crate::img::process_image;
 
 
-/// Walk or traverse a provided directory. Calls itself recursively if a directory is found within
-/// the provided path, and the options specify.
+/// Walk or traverse a provided directory. Calls recursively if a directory is found within
+/// the provided path, and the options specify todoso.
 pub fn walk_path(dir: &Path,  opts: &Opts, m: &mut Metrics) -> Result<()>
 {
     if dir.is_dir() {
@@ -49,7 +49,7 @@ pub fn walk_path(dir: &Path,  opts: &Opts, m: &mut Metrics) -> Result<()>
 pub fn digest_path(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
 {
     lazy_static::lazy_static! {
-        static ref RE: regex::Regex = regex::Regex::new("320w|480w|640w|768w|960w|1024w|1280w|1440w|legacy").unwrap();
+        static ref RE: regex::Regex = regex::Regex::new("320w|480w|640w|768w|960w|1024w|1280w|1366w|1440w|1600w|1920w|legacy").unwrap();
     }
 
     // Directories dont have extensions?! so will simply continue
