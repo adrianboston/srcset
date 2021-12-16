@@ -5,8 +5,8 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 
-#[inline]
 /// Creates a std::path::Path from an array of strings
+#[inline]
 pub fn path_from_array(array: &[&str]) -> PathBuf {
     let mut pb = PathBuf::new();
 
