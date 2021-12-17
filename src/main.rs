@@ -32,7 +32,7 @@ The options are as follows:
 
 -m --min the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kb. The default is `100`
 
--s --size the sizes tag used in the **srcset** image tag. defaults to `(min-width: 768px) 50vw, 100vw`
+-s --size the sizes tag used in the **srcset** image tag. defaults to `480,`
 
 -j --jobs whether to use parallel or threaded **jobs** on image conversion.
 
@@ -90,6 +90,7 @@ mod walk;
 
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+use yansi::Paint;
 
 use crate::opts::{Opts, Metrics};
 use crate::img::process_image;
@@ -106,7 +107,8 @@ fn main() {
     let mut extension = "".to_string();
     let mut prefix = "".to_string();
 
-    let mut sizes = "(min-width: 768px) 50vw, 100vw".to_string();
+    let mut srcsizes = "480, 640, 768, 960, 1024, 1366, 1600, 1920".to_string();
+
     let mut is_recurse = false;
     let mut is_jobs = false;
     let mut is_nested = false;
@@ -136,9 +138,9 @@ fn main() {
                 .add_option(&["-p", "--prefix"], argparse::Store,
                 "Prefix added to the srcset tag, such as webroot");
 
-        args.refer(&mut sizes)
+        args.refer(&mut srcsizes)
                 .add_option(&["-s", "--sizes"], argparse::Store,
-                "The src viewport sizes tag as string");
+                "The responsive sizes as csv: defaults to \"480, 640, 768, 960, 1024, 1366, 1600, 1920\"");
 
         args.refer(&mut min_kb)
                 .add_option(&["-m", "--min"], argparse::Store,
@@ -193,12 +195,23 @@ fn main() {
         std::process::exit(1);
     }
 
-    let opts = Opts{inpath: inpath, outpath: outpath, is_file: is_file, extension: extension, prefix: prefix, sizes: sizes, min_size: min_kb * 1024, is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, is_test: is_test, is_dir: true, is_verbose: is_verbose, is_quiet: is_quiet};
+    // Convert size string by comma
+    let split = srcsizes.split(",");
+    let mut vec: Vec<u32> = vec![];
+    for s in split {
+        let x = s.trim_matches(' ');
+        vec.push(x.parse::<u32>().unwrap() );
+    }
+
+    let opts = Opts{inpath: inpath, outpath: outpath, 
+                    is_file: is_file, extension: extension, 
+                    prefix: prefix, min_size: min_kb * 1024, 
+                    is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, 
+                    is_test: is_test, is_dir: true, is_verbose: is_verbose, 
+                    is_quiet: is_quiet, srcsizes: vec};
     
     let mut m = Metrics{count: 0, resized: 0, traversed: 0, skipped: 0 };
 
-//    println!("Options {:?}", opts);
-    
     let inpath = Path::new(&inpath_str);
 
     let start = Instant::now();
@@ -210,7 +223,7 @@ fn main() {
         };
     let duration = start.elapsed();
     
-    println!("{:?}", m);
-    println!("{:?}", duration);
+    println!("Count: {}, Resized: {}, Traversed: {}, Skipped {} ", Paint::green(m.count), Paint::yellow(m.resized), Paint::blue(m.traversed), Paint::red(m.skipped));
+    println!("{:?}", Paint::green(duration));
 }
 

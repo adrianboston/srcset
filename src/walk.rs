@@ -48,8 +48,10 @@ pub fn walk_path(dir: &Path,  opts: &Opts, m: &mut Metrics) -> Result<()>
 /// Moves on without error if there is no match.
 pub fn digest_path(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
 {
+    // Dont match any filename with 3 or 4 digits ending in a w; and `legacy`
     lazy_static::lazy_static! {
-        static ref RE: regex::Regex = regex::Regex::new("320w|480w|640w|768w|960w|1024w|1280w|1366w|1440w|1600w|1920w|legacy").unwrap();
+//        static ref RE: regex::Regex = regex::Regex::new("320w|480w|640w|768w|960w|1024w|1280w|1366w|1440w|1600w|1920w|legacy").unwrap();
+        static ref RE: regex::Regex = regex::Regex::new("^\\d{3}w$|^\\d{4}w$|^legacy$").unwrap();
     }
 
     // Directories dont have extensions?! so will simply continue

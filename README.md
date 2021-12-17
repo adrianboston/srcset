@@ -22,15 +22,15 @@ The options are as follows:
 
 -t  --type      the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
 
+-s  --size      the **sizes** for responsive images: defaults to `480, 640, 768, 960, 1024, 1366, 1600, 1920`.
+
 -m  --min     set the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kilobytes. The default is `100` (aka  a min of `102400` bytes). 
 
--s  --size      the **sizes** tag used in the srcset image tag. defaults to `(min-width: 768px) 50vw, 100vw`.
+-p --prefix   add a string prefix to the filenames within the <img/> tag, such as `/var/www/html/pics`
 
 -j  --jobs      whether to use parallel threaded **jobs** on image conversion.
 
 -n  --nest     use a **nested** directory hierarchy on the output, otherwise it is flat. ignored for single file.
-
--p --prefix   add a string prefix to the filenames within the <img/> tag, such as `/var/www/html/pics`
 
 -z  --test      run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
 
@@ -63,11 +63,13 @@ Generating multiple responsive images using Photoshop, Lightroom or other GUI ap
 
 ## BACKGROUND
 
-Images are important UI/UX aspects but usually the largest payload of a web site or page. As it turns out, speed is User Experience too. Google suggests that a web page load in under 3 seconds or users will abandon the site. Amazon correctly measures this in amount of dollars lost per second. With Mobile the situation is aggravated: the connection is slower and expensive; users are even more likely to abandon the site.
+Images are important UI/UX aspects but usually the largest payload of a web site or page. As it turns out, speed is User Experience too. Google suggests that a web page load in under 3 seconds or users will abandon the site. Amazon correctly measures this in amount of dollars lost per second. With Mobile the situation is aggravated: the connection is slower and expensive; users are even more likely to abandon the site. As an extreme benchmark, Google.com comes in under 1.5 secs using [Web Page Test](https://www.webpagetest.org/) and costs **$** to view on Mobile. Anything above 10 secs is bad news. Boston Globe's Big Picture takes from 16 to 20 seconds. and the cost is **$$$$$** for any Mobile user. And the content is not cached so each view costs the same. ( Tested fom a Virigina EC2 machine). 
 
 In comes the HTML5 `srcset` attribute to help, whether Mobile or desktop Web. The html `<img>` tag takes an optional set of images that should be scaled versions of the original. The Mobile or Web browser selects an image given its current width and resolution capabilities. 'srcset' recommends images that don't waste expensive Mobile bandwidth yet provide a image suitable for the device's resolution. In desktops the browser will select an image based on its browser current width (opposed to the device's full width since they are always full screen).
 
 In summary, the `srcset` attribute permits the use of an image that is not too big yet not too small. The `srcset` attribute is ignored and `src` is used in legacy browsers.
+
+Disk is cheap while network bandwith is measured by units of time.
 
 ## AUDIENCE
 

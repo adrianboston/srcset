@@ -11,7 +11,6 @@ pub struct Opts {
     pub prefix: String,
     pub is_file: bool,
     pub extension: String,
-    pub sizes: String,
     pub is_recurse: bool,
     pub is_test: bool,
     pub is_jobs: bool,
@@ -20,6 +19,7 @@ pub struct Opts {
     pub min_size: u64,
     pub is_verbose: bool,
     pub is_quiet: bool,
+    pub srcsizes: Vec<u32>
 }
 
 
