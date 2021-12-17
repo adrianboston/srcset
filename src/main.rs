@@ -140,7 +140,7 @@ fn main() {
 
         args.refer(&mut srcsizes)
                 .add_option(&["-s", "--sizes"], argparse::Store,
-                "The responsive sizes as csv: defaults to \"480, 640, 768, 960, 1024, 1366, 1600, 1920\"");
+                "The sizes for responsive images: defaults to \"480, 640, 768, 960, 1024, 1366, 1600, 1920\"");
 
         args.refer(&mut min_kb)
                 .add_option(&["-m", "--min"], argparse::Store,
