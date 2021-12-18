@@ -19,7 +19,7 @@ pub struct Opts {
     pub min_size: u64,
     pub is_verbose: bool,
     pub is_quiet: bool,
-    pub srcsizes: Vec<u32>
+    pub sizes: Vec<u32>
 }
 
 

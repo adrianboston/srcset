@@ -107,7 +107,7 @@ fn main() {
     let mut extension = "".to_string();
     let mut prefix = "".to_string();
 
-    let mut srcsizes = "480, 640, 768, 960, 1024, 1366, 1600, 1920".to_string();
+    let mut sizes = "480, 640, 768, 960, 1024, 1366, 1600, 1920".to_string();
 
     let mut is_recurse = false;
     let mut is_jobs = false;
@@ -138,7 +138,7 @@ fn main() {
                 .add_option(&["-p", "--prefix"], argparse::Store,
                 "Prefix added to the srcset tag, such as webroot");
 
-        args.refer(&mut srcsizes)
+        args.refer(&mut sizes)
                 .add_option(&["-s", "--sizes"], argparse::Store,
                 "The sizes for responsive images: defaults to \"480, 640, 768, 960, 1024, 1366, 1600, 1920\"");
 
@@ -196,7 +196,7 @@ fn main() {
     }
 
     // Convert size string by comma
-    let split = srcsizes.split(",");
+    let split = sizes.split(",");
     let mut vec: Vec<u32> = vec![];
     for s in split {
         let x = s.trim_matches(' ');
@@ -208,7 +208,7 @@ fn main() {
                     prefix: prefix, min_size: min_kb * 1024, 
                     is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, 
                     is_test: is_test, is_dir: true, is_verbose: is_verbose, 
-                    is_quiet: is_quiet, srcsizes: vec};
+                    is_quiet: is_quiet, sizes: vec};
     
     let mut m = Metrics{count: 0, resized: 0, traversed: 0, skipped: 0 };
 

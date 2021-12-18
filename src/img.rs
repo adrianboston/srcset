@@ -29,9 +29,17 @@ pub fn process_image(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
 
     let (w,h) = img.dimensions();
     let aspect =  w as f32 / h as f32;
+
+    print_image_details(&img, &path);
     
     // Pick maximum array slice based on width of image
-    let sizes = strip_sizes(w, &opts.srcsizes);
+    let sizes = match strip_sizes(w, &opts.sizes) {
+        None => return Ok(()),
+        Some(v) => v, 
+    };
+    println!("Sizes: {:?}", sizes);
+
+    // The largest size is the legacy one
     let max = sizes.last().unwrap();
     
     if opts.is_verbose { print_image_details(&img, &path)};
@@ -97,7 +105,7 @@ pub fn process_image(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
         _ =>    path_from_array(&[&opts.prefix,&file_name]),
     };
     
-    let tag = create_tag(*max, sp.to_str().unwrap(), ext, file_name, &opts.srcsizes);
+    let tag = create_tag(*max, sp.to_str().unwrap(), ext, file_name, &opts.sizes);
 
     // THE SRCSET.TXT DESINATION
     let f = match opts.is_nested {
@@ -171,7 +179,7 @@ pub fn scale_and_save(path: &Path, outpath: &Path,
 }
 
 /// Provide an array that is suitable for large and small images based on the width
-fn strip_sizes(max: u32, sizes: &Vec<u32>) -> Vec<u32>
+fn strip_sizes(max: u32, sizes: &Vec<u32>) -> Option<Vec<u32>>
 {
    let mut vec = vec![];
    for x in 0 .. sizes.len() {
@@ -179,7 +187,11 @@ fn strip_sizes(max: u32, sizes: &Vec<u32>) -> Vec<u32>
            vec.push(sizes[x])
        }
    }
-   vec
+   // return None if empty vec
+   if vec.len() == 0 {
+       return None;}
+   else {
+       Some(vec)}
 }
 
 /// Provide an <img srcset=""> tag with the image names, smaller images get smaller sets of images
