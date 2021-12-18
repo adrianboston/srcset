@@ -18,7 +18,7 @@ The options are as follows:
 
 -r  --recurse  **recurse** the provided directory. ignored for single file.
 
--o  --out       the **output** directory for the resized image. defaults to /`tmp/srcset/`
+-o  --out       the **output** directory for the resized image. defaults to `/tmp/srcset/`
 
 -t  --type      the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
 
