@@ -1,7 +1,5 @@
-
 //! Takes a filepath, opens an image and the saves the image in the format specified
 //! by either the original file extension or that provided in options.
-
 
 use std::path::Path;
 use std::ffi::OsStr;
@@ -14,7 +12,6 @@ use yansi::Paint;
 use crate::opts::{Opts, Metrics};
 use crate::utils::{use_fileext,mk_dir, path_from_array};
 use crate::img_ext::ImgExt;
-
 
 /// Process the image provided in the path.
 /// Iterate through the sizes and create a scaled image for each
