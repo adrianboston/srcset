@@ -83,14 +83,15 @@ The resulting tag is:
 
 */
 
+use std::path::{Path, PathBuf};
+use std::time::Instant;
+use yansi::Paint;
+
 mod utils;
 mod opts;
 mod img;
 mod walk;
-
-use std::path::{Path, PathBuf};
-use std::time::Instant;
-use yansi::Paint;
+mod img_ext;
 
 use crate::opts::{Opts, Metrics};
 use crate::img::process_image;
@@ -101,7 +102,15 @@ fn main() {
    
    // The defaults!
     let mut inpath_str = "".to_string();
-    let mut outpath_str = "/tmp/srcset/".to_string();
+
+    let mut outpath_str =
+    if cfg!(target_family = "windows") {
+        "srcset".to_string()
+    } else {
+        "/tmp/srcset/".to_string()
+    };
+
+    
     
     let mut is_file = false;
     let mut extension = "".to_string();
@@ -116,6 +125,8 @@ fn main() {
     let mut is_verbose = false;
     let mut is_quiet = false;
     let mut min_kb = 100;
+    let mut quality = 82;
+    let mut unsharpen = "0.25,8".to_string();
 
     {
         let mut args = argparse::ArgumentParser::new();
@@ -136,7 +147,7 @@ fn main() {
 
         args.refer(&mut prefix)
                 .add_option(&["-p", "--prefix"], argparse::Store,
-                "Prefix added to the srcset tag, such as webroot");
+                "Prefix added to the srcset tag");
 
         args.refer(&mut sizes)
                 .add_option(&["-s", "--sizes"], argparse::Store,
@@ -152,7 +163,7 @@ fn main() {
 
         args.refer(&mut is_nested)
                 .add_option(&["-n", "--nested"], argparse::StoreTrue,
-                "Images are saved in a nested (not flat) hierarchy");
+                "Images are saved in a nested hierarchy");
 
         args.refer(&mut is_test)
                 .add_option(&["-z", "--test"], argparse::StoreTrue,
@@ -170,6 +181,14 @@ fn main() {
                 .add_argument("file", argparse::Store,
                 "Path (Filename or directory) of image");
 
+        args.refer(&mut quality)
+                .add_option(&["-q", "--quality"], argparse::Store,
+                "Quality with a value in the range 1-100 where 100 is the best; default is 82");
+
+        args.refer(&mut unsharpen)
+                .add_option(&["-u", "--unsharpen"], argparse::Store,
+                "Unsharpen with a sigma float and threshold int; default is 0.25,8");
+
 
         args.parse_args_or_exit();
     }
@@ -181,6 +200,7 @@ fn main() {
         println!("File or directory argument is required.");
         std::process::exit(1);
     }
+
     let inpath = PathBuf::from(&inpath_str);
     
     if inpath.is_file() {
@@ -203,12 +223,17 @@ fn main() {
         vec.push(x.parse::<u32>().unwrap() );
     }
 
+    let sigmathresh: Vec<&str> = unsharpen.split(",").collect();
+    let sigma = sigmathresh[0].parse::<f32>().unwrap();
+    let thresh = sigmathresh[1].parse::<i32>().unwrap();
+
+
     let opts = Opts{inpath: inpath, outpath: outpath, 
                     is_file: is_file, extension: extension, 
                     prefix: prefix, min_size: min_kb * 1024, 
                     is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, 
                     is_test: is_test, is_dir: true, is_verbose: is_verbose, 
-                    is_quiet: is_quiet, sizes: vec};
+                    is_quiet: is_quiet, sizes: vec, quality: quality, sigma: sigma, thresh: thresh};
     
     let mut m = Metrics{count: 0, resized: 0, traversed: 0, skipped: 0 };
 

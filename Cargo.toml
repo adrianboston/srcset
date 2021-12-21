@@ -15,3 +15,22 @@ anyhow = "1.0"
 # print stuff
 human_bytes = "0.3.0"
 yansi = "0.5.0"
+
+[features]
+default = ["jpeg", "png", "tiff"]
+
+bmp = []
+gif = []
+hdr = []
+ico = []
+jpeg = []
+png = []
+pnm = []
+tga = []
+dds = []
+tiff = []
+webp = []
+farbfeld = []
+avif-encoder = []
+
+

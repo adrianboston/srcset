@@ -2,16 +2,19 @@
 //! Takes a filepath, opens an image and the saves the image in the format specified
 //! by either the original file extension or that provided in options.
 
-use std::ffi::OsStr;
 
-use image::{DynamicImage, GenericImageView};
 use std::path::Path;
+use std::ffi::OsStr;
 use rayon::prelude::*;
 use anyhow::Result;
+use image::{DynamicImage};
+use image::GenericImageView;
+use yansi::Paint;
 
 use crate::opts::{Opts, Metrics};
 use crate::utils::{use_fileext,mk_dir, path_from_array};
-use yansi::Paint;
+use crate::img_ext::ImgExt;
+
 
 /// Process the image provided in the path.
 /// Iterate through the sizes and create a scaled image for each
@@ -20,24 +23,21 @@ pub fn process_image(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
     // Use the open function to load an image from a Path.
     // `open` returns a `DynamicImage` on success.
     let img:DynamicImage = image::open(path)?;
-    
+
     if opts.is_file {
-        println!("<< {:?}", Paint::green(&path));
+        println!("{:?}", Paint::green(&path));
     } else {
-        println!("<< {:?}", Paint::green(path.strip_prefix(opts.inpath.as_path()).unwrap()));
+        println!("{:?}", Paint::green(path.strip_prefix(opts.inpath.as_path()).unwrap()));
     }
 
     let (w,h) = img.dimensions();
     let aspect =  w as f32 / h as f32;
 
-    print_image_details(&img, &path);
-    
     // Pick maximum array slice based on width of image
     let sizes = match strip_sizes(w, &opts.sizes) {
         None => return Ok(()),
         Some(v) => v, 
     };
-    println!("Sizes: {:?}", sizes);
 
     // The largest size is the legacy one
     let max = sizes.last().unwrap();
@@ -65,9 +65,12 @@ pub fn process_image(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
     if !opts.is_test {
         //let w = sizes.last().unwrap();
         let legacy_img = img.resize_to_fill(*max, (*max as f32/aspect) as u32, image::imageops::FilterType::Lanczos3);
+        legacy_img.unsharpen(opts.sigma, opts.thresh);
 
         mk_dir(&np);
         legacy_img.save(&np)?;
+        //legacy_img.save_with_quality(&np, opts.quality)?;
+
         if opts.is_verbose {print_image_details(&legacy_img, &np)}
 
     }
@@ -123,7 +126,7 @@ pub fn process_image(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
                     "srcset.txt"]),
     };
 
-    if opts.is_verbose { println!(">> {:?}", f);}
+    if opts.is_verbose { println!("{:?}", f);}
 
     println!("\n{}\n\n", Paint::blue(&tag) );
 
@@ -167,10 +170,13 @@ pub fn scale_and_save(path: &Path, outpath: &Path,
 
 
     if !opts.is_test {
-        let scaled = img.resize_to_fill(nwidth as u32, nheight as u32, image::imageops::FilterType::Lanczos3);
-        scaled.save(&img_path)?;
-//        if opts.is_verbose { println!(">> {:?}", img_path);}        
-        if opts.is_verbose {print_image_details(&scaled, &img_path)}
+        let scaled =    img.resize_to_fill(nwidth as u32, nheight as u32, image::imageops::FilterType::Lanczos3);
+        scaled.unsharpen(opts.sigma, opts.thresh);
+        
+        //scaled.save(&img_path)?;
+        scaled.save_with_quality(&img_path, opts.quality)?;
+
+        if opts.is_verbose {print_image_details(&img, &img_path)}
     } else {
         if opts.is_verbose { println!(">> {:?}", img_path);}
     }
@@ -183,7 +189,7 @@ fn strip_sizes(max: u32, sizes: &Vec<u32>) -> Option<Vec<u32>>
 {
    let mut vec = vec![];
    for x in 0 .. sizes.len() {
-       if max > sizes[x] {
+       if max >= sizes[x] {
            vec.push(sizes[x])
        }
    }
@@ -231,3 +237,27 @@ fn print_image_details(img: &DynamicImage, path: &Path) {
     let sz = path.metadata().unwrap().len();
     println!("{:?} Width={}: Height={}; Size={}; Color={:?}", path, Paint::red(w), h, Paint::red(human_bytes::human_bytes(sz as f64)), img.color());
 }
+
+
+
+/*
+fn encode_image_jpeg(path: &Path, img: &DynamicImage, nwidth: u32, nheight: u32) -> Result<()> 
+{
+
+    let fin = File::open(path)?;
+    let buf = BufReader::new(fin);
+
+
+    let mut encoder = image::jpeg::JpegEncoder::new_with_quality(&mut buf, 80);
+
+//    let img = image::ImageBuffer::new(512, 512);
+
+    let bytes = img.as_bytes();
+
+    encoder.encode(&bytes, nwidth, nheight, image::ColorType::Rgba8)?;
+
+    buffer.write_all(bytes)?;
+
+    Ok(())
+}
+*/

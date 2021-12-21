@@ -4,9 +4,9 @@
 
 ## SYNOPSIS
 
-`./srset [-rjnvqzh] [—t type] [-s sizes] [-o outpath] filename`
+`./srset [-rnvqzh] [—t type] [-s sizes] [-q quality] [-u unsharpen] [-p prefix] [-o outpath] filename`
 
-`./srset [-rjnvqzh] [—t type] [-s sizes] [-o outpath] file hierarchy`
+`./srset [-rjnvqzh] [—t type] [-s sizes] [-q quality] [-u unsharpen] [-p prefix] [-m min] [-o outpath] file hierarchy`
 
 ## DESCRIPTION
 
@@ -18,27 +18,31 @@ The options are as follows:
 
 -r  --recurse   **recurse** the provided directory. ignored for single file.
 
--o  --out       the **output** directory for the resized image. defaults to `/tmp/srcset/`
+-o  --out       The **output** directory for the resized image. defaults to `/tmp/srcset/`; windows its `srcset`
 
--t  --type      the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
+-t  --type      The **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
 
--s  --size      the **sizes** for responsive images in comma,separated,value form; defaults to `480, 640, 768, 960, 1024, 1366, 1600, 1920`.
+-s  --size      The **sizes** for responsive images in comma,separated,value form; defaults to `480, 640, 768, 960, 1024, 1366, 1600, 1920`.
 
--m  --min       set the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kilobytes. The default is `100` (aka  a min of `102400` bytes). 
+-q --quality    Quality with a value in the range 1-100 where 100 is the best; default is `82`. Only for jpegs.
 
--p --prefix     add a string prefix to the filenames within the <img/> tag, such as `/var/www/html/pics`
+-u  --unsharpen Unsharpen with a sigma float and threshold int; default is `0.25,8`.
 
--j  --jobs      whether to use parallel threaded **jobs** on image conversion.
+-m  --min       Set the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kilobytes. The default is `100` (aka  a min of `102400` bytes). 
 
--n  --nest      use a **nested** directory hierarchy on the output, otherwise it is flat. ignored for single file.
+-p --prefix     String prefix to the filenames within the <img/> tag, such as `/var/www/html/pics`.
 
--z  --test      run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
+-j  --jobs      Whether to use parallel threaded **jobs** on image conversion.
 
--v   --verbose  use **verbose** output.
+-n  --nest      Use a **nested** directory hierarchy on the output, otherwise it is flat. ignored for single file.
 
--q  --quiet     **quiet** the errors; functionally the same as piping error to null, `2>/dev/null` 
+-z  --test      Run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
 
--h --help       display the **help**.
+-v   --verbose  Use **verbose** output.
+
+-q  --quiet     **quiet** the errors; functionaly the same as piping error to null, `2>/dev/null` 
+
+-h --help       Display the **help**.
 
 ## BUILD COMPILE
 

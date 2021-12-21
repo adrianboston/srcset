@@ -1,16 +1,12 @@
 
-//! Walk a directory tree, hunting for jpg, png and tiff extensions.
+//! Walk a directory tree, hunting for jpg, png and tiff and image extensions.
 
 use std::path::Path;
 use std::ffi::OsStr;
-#[allow(unused_imports)]
-use std::fs::DirEntry;
-
 use anyhow::Result;
 
 use crate::opts::{Opts, Metrics};
 use crate::img::process_image;
-
 
 /// Walk or traverse a provided directory. Calls recursively if a directory is found within
 /// the provided path, and the options specify todoso.
@@ -42,15 +38,14 @@ pub fn walk_path(dir: &Path,  opts: &Opts, m: &mut Metrics) -> Result<()>
     Ok(())
 }
 
-/// Digest or consume a path. Check extension for image type (jpg, png, tiff). In addition,
-/// Skips any filename matching `"320w|480w|640w|768w|960w|1024w|1280w|1440w|legacy`
+/// Digest or consume a path. Check extension for image type (jpg, png, tif or others specified). In addition,
+/// Skips any filename matching `^\\d{3}w$|^\\d{4}w$|^legacy$`
 /// If matching the above concerns, then process the iamge.
 /// Moves on without error if there is no match.
 pub fn digest_path(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
 {
-    // Dont match any filename with 3 or 4 digits ending in a w; and `legacy`
+    // match any filename with 3 or 4 digits ending in a w; and `legacy`
     lazy_static::lazy_static! {
-//        static ref RE: regex::Regex = regex::Regex::new("320w|480w|640w|768w|960w|1024w|1280w|1366w|1440w|1600w|1920w|legacy").unwrap();
         static ref RE: regex::Regex = regex::Regex::new("^\\d{3}w$|^\\d{4}w$|^legacy$").unwrap();
     }
 
@@ -60,9 +55,9 @@ pub fn digest_path(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
         // No extension. Move on
         None => (),
         
-        Some("jpg") | Some("JPG") | Some("png") | Some("PNG")
-            | Some("tiff") | Some("TIFF") | Some("tif") | Some("TIF")
+        Some(s)
                 => {
+                    if check_extension(s) {
                         if path.metadata().unwrap().len() > opts.min_size
                         {
                             let nm = path.file_stem().and_then(OsStr::to_str).unwrap();
@@ -82,11 +77,43 @@ pub fn digest_path(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
                             if !opts.is_quiet{eprintln!("WARNING: Skipping {:?}", path)};
                         }
                     }
+                    }
                     ,
-        // Anything else. Move on
-        _ => (),
     }
-    
 
     Ok(())
+}
+
+
+fn check_extension(ext: &str) -> bool
+{
+    match ext.to_lowercase().as_str() {
+        #[cfg(feature = "bmp")]
+        "bmp" => true,
+        #[cfg(feature = "gif")]
+        "gif" => true,
+        #[cfg(feature = "hdr")]
+        "hdr" => true,
+        #[cfg(feature = "ico")]
+        "ico" => true,
+        #[cfg(feature = "jpeg")]
+        "jpg" | "jpeg" => true,
+        #[cfg(feature = "png")]
+        "png" => true,
+        #[cfg(feature = "pnm")]
+        "pnm" | "pgm" | "ppm" => true,
+        #[cfg(feature = "tga")]
+        "tga" => true,
+        #[cfg(feature = "dds")]
+        "dds" => true,
+        #[cfg(feature = "tiff")]
+        "tif" | "tiff" => true,
+        #[cfg(feature = "webp")]
+        "webp" => true,
+        #[cfg(feature = "farbfeld")]
+        "ff" => true,
+        #[cfg(any(feature = "avif-encoder", feature = "avif-decoder"))]
+        "avif" => true,
+        _  => false,
+    }
 }

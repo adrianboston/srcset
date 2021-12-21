@@ -3,7 +3,6 @@
 
 use std::path::PathBuf;
 
-
 #[derive(Debug)]
 pub struct Opts {
     pub inpath:  PathBuf,
@@ -19,8 +18,13 @@ pub struct Opts {
     pub min_size: u64,
     pub is_verbose: bool,
     pub is_quiet: bool,
-    pub sizes: Vec<u32>
+    pub sizes: Vec<u32>,
+    pub quality: u8,
+    pub sigma: f32,
+    pub thresh: i32,
 }
+
+
 
 
 #[derive(Debug)]
