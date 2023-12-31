@@ -44,23 +44,6 @@ The options are as follows:
 
 -h --help       Display the **help**.
 
-## BUILD COMPILE
-
-Consider using the Mac OSX DMG for those of you on OSX and without the rust compiler. See the [release section](https://github.com/adrianboston/srcset/releases). Open the DMG and copy the executable to the `/urs/local/bin` directory if desired. 
-
-Otherwise, Rust is easier to build from source than C/C++ projects. Dependencies are pulled in very smoothly; it seems to work without hiccups. 
-
-- Get the Rust compiler. Follow the instructions on https://www.rust-lang.org/tools/install
-
-- Git this project. `git clone https://github.com/adrianboston/srcset.git`
-
-- Open terminal and nagivate to the root directory. `cd srcset`
-
-- Then issue the Rust compiler build command: `cargo build --release`
-
-** Make sure to build using the `--release` option; otherwise, the executable  will be very slow. Consider it similar to gcc optimization level.
-
-
 ## THE PROBLEM
 
 Generating multiple responsive images using Photoshop, Lightroom or other GUI application is an irksome task for opposable-thumbed humans. Further, the needed `<img>` tag referencing multiple images in the `srcset` attribute is long and tedious to generate. On the other hand, the *srcset* tool is a generator that can be be easily added into a automated build workflow. And that long `<img>` tag with the full set of `srcset` images is the standard output which can then be dropped into the target html file(s).
@@ -120,6 +103,22 @@ The resulting tag is:
 Note that warnings / errors can be piped into a file. The most common warning is skipping a file due to its small size less than the `-m` directive that is simply a warning. `-e --quiet` will suppress all these warnings. This feature is most useful for ripping through a full directory opposed to burning a few images.
 
 `srcset -r /root 2>srcset.err`
+
+## BUILD COMPILE
+
+Consider using the Mac OSX DMG for those of you on OSX and without the rust compiler. See the [release section](https://github.com/adrianboston/srcset/releases). Open the DMG and copy the executable to the `/urs/local/bin` directory if desired. 
+
+Otherwise, Rust is easier to build from source than C/C++ projects. Dependencies are pulled in very smoothly; it seems to work without hiccups. 
+
+- Get the Rust compiler. Follow the instructions on https://www.rust-lang.org/tools/install
+
+- Git this project. `git clone https://github.com/adrianboston/srcset.git`
+
+- Open terminal and nagivate to the root directory. `cd srcset`
+
+- Then issue the Rust compiler build command: `cargo build --release`
+
+** Make sure to build using the `--release` option; otherwise, the executable  will be very slow. Consider it similar to gcc optimization level.
 
 ### Useful Resources
 
