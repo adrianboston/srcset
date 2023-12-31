@@ -22,6 +22,9 @@ pub struct Opts {
     pub quality: u8,
     pub sigma: f32,
     pub thresh: i32,
+    pub is_tagfile: bool,
+    pub use_largest: bool
+
 }
 
 
