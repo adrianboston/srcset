@@ -70,7 +70,7 @@ Of course, it can be used on single files and small directories but it's built t
 
 The utility resizes each image using the same compression as the original image; however, specify the desination type using the `-t` directive. *srcset* permits the use of an image in TIFF format -- that is often the second step after Nikon, Canon and other 'raw' native formats -- from which `srcset` can generate the final HTML-ready images. 
 
-## Formats 
+## FORMATS 
 
 *srcset* offers the ability to convert images to and from the following formats: JPEG, PNG, TIFF, GIF, WEBP.
 
