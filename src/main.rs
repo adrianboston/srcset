@@ -116,7 +116,7 @@ fn main() {
     let mut extension = "".to_string();
     let mut prefix = "".to_string();
 
-    let mut sizes = "480, 640, 768, 960, 1024, 1366, 1600, 1920".to_string();
+    let mut sizes = "320, 480, 640, 768, 960, 1024, 1366, 1600, 1920".to_string();
 
     let mut is_recurse = false;
     let mut is_jobs = false;
@@ -128,10 +128,16 @@ fn main() {
     let mut quality = 82;
     let mut unsharpen = "0.25,8".to_string();
 
+    let mut is_tagfile = true;
+    let mut use_largest = true;
+
     {
         let mut args = argparse::ArgumentParser::new();
 
-        args.set_description("srcset command-line utility");
+        const DESCRIPTION_STRING: &'static str =
+        concat!("srcset command-line utility v", env!("CARGO_PKG_VERSION"));        
+
+        args.set_description(DESCRIPTION_STRING);
 
         args.refer(&mut outpath_str)
                 .add_option(&["-o", "--out"], argparse::Store,
@@ -151,7 +157,7 @@ fn main() {
 
         args.refer(&mut sizes)
                 .add_option(&["-s", "--sizes"], argparse::Store,
-                "The sizes for responsive images: defaults to \"480, 640, 768, 960, 1024, 1366, 1600, 1920\"");
+                "The sizes for responsive images: defaults to \"320, 480, 640, 768, 960, 1024, 1366, 1600, 1920\"");
 
         args.refer(&mut min_kb)
                 .add_option(&["-m", "--min"], argparse::Store,
@@ -174,7 +180,7 @@ fn main() {
                 "Verbose output");
 
         args.refer(&mut is_quiet)
-                .add_option(&["-q", "--quiet"], argparse::StoreTrue,
+                .add_option(&["-e", "--quiet"], argparse::StoreTrue,
                 "Quiet errors");
 
         args.refer(&mut inpath_str)
@@ -189,12 +195,22 @@ fn main() {
                 .add_option(&["-u", "--unsharpen"], argparse::Store,
                 "Unsharpen with a sigma float and threshold int; default is 0.25,8");
 
+        args.refer(&mut is_tagfile)
+                .add_option(&["-d", "--notag"], argparse::StoreTrue,
+                "Dont create a tag file");
+
+        args.refer(&mut use_largest)
+                .add_option(&["-l", "--largest"], argparse::StoreTrue,
+                "Scale to the largest size");
 
         args.parse_args_or_exit();
     }
     
     // Output must end in `/` so simply append one.
     if !outpath_str.ends_with("/") {  outpath_str.push_str("/"); }
+
+    // Seems like a whitespace creeps in?
+    extension = extension.trim().to_string();
 
     if inpath_str == "" {
         println!("File or directory argument is required.");
@@ -233,7 +249,9 @@ fn main() {
                     prefix: prefix, min_size: min_kb * 1024, 
                     is_recurse: is_recurse, is_jobs: is_jobs, is_nested: is_nested, 
                     is_test: is_test, is_dir: true, is_verbose: is_verbose, 
-                    is_quiet: is_quiet, sizes: vec, quality: quality, sigma: sigma, thresh: thresh};
+                    is_quiet: is_quiet, sizes: vec, quality: quality,
+                    sigma: sigma, thresh: thresh, is_tagfile: is_tagfile,
+                    use_largest: use_largest};
     
     let mut m = Metrics{count: 0, resized: 0, traversed: 0, skipped: 0 };
 
@@ -244,7 +262,16 @@ fn main() {
         match inpath.is_dir()
         {
             true => walk_path(&inpath, &opts, &mut m),
-            _ => process_image(&inpath, &opts, &mut m),
+            _ => {
+                match process_image(&inpath, &opts, &mut m) {
+                    Err(e) => { if !opts.is_quiet{eprintln!("{} {:?}, {:?}", Paint::red("WARNING: Processing error: "), inpath, e)}},
+                    _ => (),           
+                }
+                Ok(())
+                },                              
+           
+//            process_image(&inpath, &opts, &mut m),
+            
         };
     let duration = start.elapsed();
     
