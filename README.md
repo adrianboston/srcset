@@ -20,7 +20,7 @@ The options are as follows:
 
 -o  --out       The **output** directory for the resized image. defaults to `/tmp/srcset/`; windows its `srcset`
 
--t  --type      The **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
+-t  --type      The **type** of image conversion (png, jpg, webp, ... ); defaults to the same type as the original image found in the input path.
 
 -s  --size      The **sizes** for responsive images in comma,separated,value form; defaults to `480, 640, 768, 960, 1024, 1366, 1600, 1920`.
 
@@ -68,7 +68,13 @@ Of course, it can be used on single files and small directories but it's built t
 
 `srcset` requires a file path, whether filename or file hierarcy. If a filename, that single file will resized. If a file hierarchy, the files within that directory will be resized. Specifying the option `r` it will walk the file hierarchy resizing any found images.
 
-The utility resizes each image using the same compression as the original image; however, specify the desination type using the `-t` directive. *srcset* permits the use of an image in TIFF format -- that is often the second step after Nikon, Canon and other 'raw' native formats -- from which `srcset` can generate the final HTML-ready images. Or you can stick with the tried JPEG, PNG and GIF.
+The utility resizes each image using the same compression as the original image; however, specify the desination type using the `-t` directive. *srcset* permits the use of an image in TIFF format -- that is often the second step after Nikon, Canon and other 'raw' native formats -- from which `srcset` can generate the final HTML-ready images. 
+
+## Formats 
+
+*srcset* offers the ability to convert images to and from the following formats: JPEG, PNG, TIFF, GIF, WEBP.
+
+The newly added Webp format is recommended since it offers both lossless and lossy compression in one convenient format. Google claims that its lossless images are 26% smaller that PNGs while its lossy images are 25-34% smaller than JPEGS at the same quality.
 
 ## FILE STRUCTURE
 
@@ -116,6 +122,8 @@ Otherwise, Rust is easier to build from source than C/C++ projects. Dependencies
 
 - Open terminal and nagivate to the root directory. `cd srcset`
 
+- Set the desired encodings in Cargo.toml or stick with the `default = ["jpeg", "png", "tiff", "gif", "webp", "webp-encoder"]`
+
 - Then issue the Rust compiler build command: `cargo build --release`
 
 ** Make sure to build using the `--release` option; otherwise, the executable  will be very slow. Consider it similar to gcc optimization level.
@@ -128,6 +136,11 @@ Otherwise, Rust is easier to build from source than C/C++ projects. Dependencies
 - https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img
 - https://css-tricks.com/responsive-images-youre-just-changing-resolutions-use-srcset/
 - https://www.smashingmagazine.com/2015/06/efficient-image-resizing-with-imagemagick/
+
+##### The recommended webp image format
+
+- https://developers.google.com/speed/webp
+
 
 ##### Common screen sizes
 
