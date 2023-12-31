@@ -4,9 +4,9 @@
 
 ## SYNOPSIS
 
-`./srset [-rnvqzh] [—t type] [-s sizes] [-q quality] [-u unsharpen] [-p prefix] [-o outpath] filename`
+`./srset [-rnvezh] [—t type] [-s sizes] [-q quality] [-u unsharpen] [-p prefix] [-o outpath] filename`
 
-`./srset [-rjnvqzh] [—t type] [-s sizes] [-q quality] [-u unsharpen] [-p prefix] [-m min] [-o outpath] file hierarchy`
+`./srset [-rjnvezh] [—t type] [-s sizes] [-q quality] [-u unsharpen] [-p prefix] [-m min] [-o outpath] file hierarchy`
 
 ## DESCRIPTION
 
@@ -40,7 +40,7 @@ The options are as follows:
 
 -v   --verbose  Use **verbose** output.
 
--q  --quiet     **quiet** the errors; functionaly the same as piping error to null, `2>/dev/null` 
+-e  --quiet     **quiet** the errors; functionaly the same as piping error to null, `2>/dev/null` 
 
 -h --help       Display the **help**.
 
@@ -98,6 +98,7 @@ $ srcset my_image.jpg
 
 - my_image/
         legacy.jpg
+        320w.jpg
         480w.jpg
         640w.jpg
         768w.jpg
@@ -116,7 +117,7 @@ The resulting tag is:
 
 ## ERRORS AND WARNINGS
 
-Note that warnings / errors can be piped into a file. The most common warning is skipping a file due to its small size less than the `-m` directive that is simply a warning. `-q --quiet` will suppress all these warnings. This feature is most useful for ripping through a full directory opposed to burning a few images.
+Note that warnings / errors can be piped into a file. The most common warning is skipping a file due to its small size less than the `-m` directive that is simply a warning. `-e --quiet` will suppress all these warnings. This feature is most useful for ripping through a full directory opposed to burning a few images.
 
 `srcset -r /root 2>srcset.err`
 

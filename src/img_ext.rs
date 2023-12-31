@@ -7,7 +7,8 @@ use std::io::BufWriter;
 
 use image::ColorType;
 use image::error::{ImageError, ImageFormatHint, ImageResult};
-use image::{GenericImageView, ImageFormat, ImageEncoder};
+use image::{ImageFormat, ImageEncoder};
+use image::EncodableLayout;
 
 #[cfg(feature = "bmp")]
 use image::codecs::bmp;
@@ -41,6 +42,10 @@ pub trait ImgExt {
     fn save_with_quality<Q>(&self, path: Q, quality: u8) -> ImageResult<()>
     where
         Q: AsRef<Path>;
+
+    fn save_safe_with_quality<Q>(&self, path: Q, quality: u8) -> ImageResult<()>
+        where
+            Q: AsRef<Path>;        
 }
 
 
@@ -65,7 +70,34 @@ impl ImgExt for image::DynamicImage {
             quality
         )
     }
+
+    fn save_safe_with_quality<Q>(&self, path: Q, quality: u8) -> ImageResult<()>
+        where
+            Q: AsRef<Path>,
+    {
+        let format =  ImageFormat::from_path(&path)?;
+
+        match format {
+            #[cfg(feature = "webp")]
+            image::ImageFormat::WebP => {
+                let rgb_image = self.clone().into_rgb8();
+                let buf = rgb_image.as_bytes();            
+                save_buffer_with_format_quality(path.as_ref(), buf, self.width(), self.height(), ColorType::Rgb8, format, quality)
+            },
+
+            _ => save_buffer_with_quality(path.as_ref(),
+                self.as_bytes(), self.width(), self.height(), self.color(), quality
+            )
+    
+        }
+        
+
+    }
+
 }
+
+
+
 
 
 
@@ -101,12 +133,16 @@ pub fn save_buffer_with_format_quality(
     match format {
        #[cfg(feature = "gif")]
         image::ImageFormat::Gif => gif::GifEncoder::new(fout).encode(buf, width, height, color),
+
         #[cfg(feature = "ico")]
         image::ImageFormat::Ico => ico::IcoEncoder::new(fout).write_image(buf, width, height, color),
+
         #[cfg(feature = "jpeg")]
         image::ImageFormat::Jpeg => jpeg::JpegEncoder::new_with_quality(fout, quality).write_image(buf, width, height, color),
+
         #[cfg(feature = "png")]
         image::ImageFormat::Png => png::PngEncoder::new(fout).write_image(buf, width, height, color),
+
         #[cfg(feature = "pnm")]
         image::ImageFormat::Pnm => {
             let ext = path.extension()
@@ -126,20 +162,65 @@ pub fn save_buffer_with_format_quality(
                 _ => Err(ImageError::Unsupported(ImageFormatHint::Exact(format).into())), // Unsupported Pnm subtype.
             }
         },
+
         #[cfg(feature = "farbfeld")]
         image::ImageFormat::Farbfeld => farbfeld::FarbfeldEncoder::new(fout).write_image(buf, width, height, color),        
+
         #[cfg(feature = "avif-encoder")]
         image::ImageFormat::Avif => avif::AvifEncoder::new(fout).write_image(buf, width, height, color),
         //#[cfg(feature = "hdr")]
         //image::ImageFormat::Hdr => hdr::HdrEncoder::new(fout).encode(&[Rgb<f32>], width, height), // usize
+
         #[cfg(feature = "bmp")]
         image::ImageFormat::Bmp => bmp::BmpEncoder::new(fout).write_image(buf, width, height, color),
+
         #[cfg(feature = "tiff")]
         image::ImageFormat::Tiff => tiff::TiffEncoder::new(fout)
             .write_image(buf, width, height, color),
+
        #[cfg(feature = "tga")]
         image::ImageFormat::Tga => tga::TgaEncoder::new(fout).write_image(buf, width, height, color),
+
+        #[cfg(feature = "webp")]
+        image::ImageFormat::WebP => {
+            //let webp = webp::WebPEncoder::new(fout);
+            let r = webp::WebPEncoder::new(fout).write_image(buf, width, height, ColorType::Rgb8);
+            println!("Webp result {:?}", r);
+            r
+        }, 
 
         format => Err(ImageError::Unsupported(ImageFormatHint::Exact(format).into())),
     }
 }
+
+
+/*
+#[cfg(feature = "ico")]
+image::ImageFormat::Ico => self.save_with_quality(path,quality),
+
+#[cfg(feature = "jpeg")]
+image::ImageFormat::Jpeg => self.save_with_quality(path,quality),
+
+#[cfg(feature = "png")]
+image::ImageFormat::Png => self.save_with_quality(path,quality),
+
+
+#[cfg(feature = "tiff")]
+image::ImageFormat::Tiff => self.save_with_quality(path,quality),
+
+#[cfg(feature = "tga")]
+image::ImageFormat::Tga => self.save_with_quality(path,quality),
+
+#[cfg(feature = "webp")]
+image::ImageFormat::WebP => {
+
+    // let gray_image = image::GrayImage::new(10, 20);
+    // let rgb_image = image::DynamicImage::from(gray_image).into_rgb8();
+    // let buf = rgb_image.as_bytes();
+
+    let rgb_image = self.clone().into_rgba8();
+    let buf = rgb_image.as_bytes();
+
+    save_buffer_with_format_quality(path.as_ref(), buf, self.width(), self.height(), ColorType::Rgb8, format, quality)
+}, 
+*/
