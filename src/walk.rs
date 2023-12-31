@@ -4,6 +4,7 @@
 use std::path::Path;
 use std::ffi::OsStr;
 use anyhow::Result;
+use yansi::Paint;
 
 use crate::opts::{Opts, Metrics};
 use crate::img::process_image;
@@ -66,9 +67,10 @@ pub fn digest_path(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
                             if !RE.is_match(nm)
                             {
                                 match process_image(&path, &opts, m) {
-                                    Err(e) => { if !opts.is_quiet{eprintln!("WARNING: Processing error {:?} {:?}", path, e)}},
+                                    //Err(e) => { if !opts.is_quiet{eprintln!("WARNING: Processing error {:?} {:?}", path, e)}},
+                                    Err(e) => { if !opts.is_quiet{eprintln!("{} {:?}, {:?}", Paint::red("WARNING: Processing error: "), path, e)}},                                    
                                     _ => (),
-                            }
+                                }
                             }
                         }
                         else
