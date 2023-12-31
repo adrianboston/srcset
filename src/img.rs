@@ -5,7 +5,7 @@ use std::path::Path;
 use std::ffi::OsStr;
 use rayon::prelude::*;
 use anyhow::Result;
-use image::{DynamicImage};
+use image::DynamicImage;
 use image::GenericImageView;
 use yansi::Paint;
 
@@ -31,10 +31,19 @@ pub fn process_image(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
     let aspect =  w as f32 / h as f32;
 
     // Pick maximum array slice based on width of image
-    let sizes = match strip_sizes(w, &opts.sizes) {
+    let maxsize = match opts.use_largest {
+        true => *opts.sizes.last().unwrap(),
+        false => w,
+    };
+
+    // Pick maximum array slice based on width of image
+    let sizes = match strip_sizes(maxsize, &opts.sizes) {
         None => return Ok(()),
         Some(v) => v, 
     };
+
+    println!("\n{:?}\n\n", Paint::blue(&sizes) );
+
 
     // The largest size is the legacy one
     let max = sizes.last().unwrap();
@@ -60,13 +69,14 @@ pub fn process_image(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
 
     // For the legacy image, do not just copy the original resize to max size of 1440 or less
     if !opts.is_test {
-        //let w = sizes.last().unwrap();
         let legacy_img = img.resize_to_fill(*max, (*max as f32/aspect) as u32, image::imageops::FilterType::Lanczos3);
+
         legacy_img.unsharpen(opts.sigma, opts.thresh);
 
         mk_dir(&np);
-        legacy_img.save(&np)?;
+        //legacy_img.save(&np)?;
         //legacy_img.save_with_quality(&np, opts.quality)?;
+        legacy_img.save_safe_with_quality(&np, opts.quality)?;
 
         if opts.is_verbose {print_image_details(&legacy_img, &np)}
 
@@ -104,33 +114,34 @@ pub fn process_image(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
                     ),
         _ =>    path_from_array(&[&opts.prefix,&file_name]),
     };
-    
-    let tag = create_tag(*max, sp.to_str().unwrap(), ext, file_name, &opts.sizes);
+
+    let tag = create_tag(*max, sp.to_str().unwrap(), ext, &file_name, &opts.sizes);
 
     // THE SRCSET.TXT DESINATION
-    let f = match opts.is_nested {
-        true =>
-                path_from_array(&[
+    if opts.is_tagfile == true {
+        let f = match opts.is_nested {
+            true =>
+                    path_from_array(&[
+                            &opts.outpath.to_str().unwrap(),
+                            &path.strip_prefix(opts.inpath.as_path()).unwrap().parent().unwrap().to_str().unwrap(),
+                            &file_name,
+                            "srcset.txt"]
+                            ),
+
+            _ =>    path_from_array(&[
                         &opts.outpath.to_str().unwrap(),
-                        &path.strip_prefix(opts.inpath.as_path()).unwrap().parent().unwrap().to_str().unwrap(),
                         &file_name,
-                        "srcset.txt"]
-                        ),
-
-        _ =>    path_from_array(&[
-                    &opts.outpath.to_str().unwrap(),
-                    &file_name,
-                    "srcset.txt"]),
-    };
-
-    if opts.is_verbose { println!("{:?}", f);}
-
-    println!("\n{}\n\n", Paint::blue(&tag) );
-
-    if !opts.is_test {
-        std::fs::write(f, &tag)?;
-    }
+                        "srcset.txt"]),
+        };
     
+        if opts.is_verbose { println!("{:?}", f);}
+
+        println!("\n{}\n\n", Paint::blue(&tag) );
+
+        if !opts.is_test {
+            std::fs::write(f, &tag)?;
+        }
+    }    
     // Increment the counter
     m.count = m.count + 1;
     m.resized = m.resized+(sizes.len() as u32);
@@ -167,13 +178,18 @@ pub fn scale_and_save(path: &Path, outpath: &Path,
 
 
     if !opts.is_test {
-        let scaled =    img.resize_to_fill(nwidth as u32, nheight as u32, image::imageops::FilterType::Lanczos3);
+        let scaled = img.resize_to_fill(nwidth as u32, nheight as u32, image::imageops::FilterType::Lanczos3);
+
+
         scaled.unsharpen(opts.sigma, opts.thresh);
+
         
         //scaled.save(&img_path)?;
-        scaled.save_with_quality(&img_path, opts.quality)?;
+        //scaled.save_with_quality(&img_path, opts.quality)?;
+        scaled.save_safe_with_quality(&img_path, opts.quality)?;
 
-        if opts.is_verbose {print_image_details(&img, &img_path)}
+
+        if opts.is_verbose {print_image_details(&scaled, &img_path)}
     } else {
         if opts.is_verbose { println!(">> {:?}", img_path);}
     }
@@ -181,7 +197,7 @@ pub fn scale_and_save(path: &Path, outpath: &Path,
     Ok(())
 }
 
-/// Provide an array that is suitable for large and small images based on the width
+/// Return an array that is suitable for large and small images based on the provided max width
 fn strip_sizes(max: u32, sizes: &Vec<u32>) -> Option<Vec<u32>>
 {
    let mut vec = vec![];
