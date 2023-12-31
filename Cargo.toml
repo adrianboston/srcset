@@ -5,7 +5,6 @@ authors = ["A Boston"]
 description = "A tool that generates multiple images used in responsive web and mobile sites and apps."
 edition = "2021"
 readme = "README.md"
-#homepage = "https://github.com/you/grrs"
 repository = "https://github.com/adrianboston/srcset"
 keywords = ["cli", "image", "responsive-images", "mobile-web"]
 categories = ["command-line-utilities"]
