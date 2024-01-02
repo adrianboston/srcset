@@ -24,29 +24,35 @@ A file path, whether filename or file hierarcy is required. Specify the path (fi
 
 The options are as follows:
 
--r --recurse **recurse** the provided path. ignored for single file.
+-r  --recurse   **recurse** the provided directory. ignored for single file.
 
--o --out an **output** directory for the resized image. defaults to /`tmp/srcset/`
+-o  --out       The **output** directory for the resized image. defaults to `/tmp/srcset/`; windows its `srcset`
 
--t --type the **type** of image conversion (png, jpg, ... ); defaults to the same type as the original image found in the input path.
+-t  --type      The **type** of image conversion (png, jpg, webp, ... ); defaults to the same type as the original image found in the input path.
 
--m --min the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kb. The default is `100`
+-s  --size      The **sizes** for responsive images in comma,separated,value form; defaults to `480, 640, 768, 960, 1024, 1366, 1600, 1920`.
 
--s --size the sizes tag used in the **srcset** image tag. defaults to `480,`
+-q --quality    Quality with a value in the range 1-100 where 100 is the best; default is `82`. Only for jpegs.
 
--j --jobs whether to use parallel or threaded **jobs** on image conversion.
+-u  --unsharpen Unsharpen with a sigma float and threshold int; default is `0.25,8`.
 
--n --nest use a **nested** directory hierarchy on the output, otherwise it is flat. ignored for single file.
+-m  --min       Set the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kilobytes. The default is `100` (aka  a min of `102400` bytes). 
 
--p --prefix add a string prefix to the filenames within the <srcset/> tag.
+-p --prefix     String prefix to the filenames within the <img/> tag, such as `/var/www/html/pics`.
 
--z --test run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
+-j  --jobs      Whether to use parallel threaded **jobs** on image conversion.
 
--v --verbose use verbose output.
+-n  --nest      Use a **nested** directory hierarchy on the output, otherwise it is flat. ignored for single file.
 
--q  --quiet **quiet** the errors. much the same as piping error to null, `2>/dev/null`
+-z  --test      Run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
 
--h   display the help.
+-v   --verbose  Use **verbose** output.
+
+-e  --quiet     **quiet** the errors; functionaly the same as piping error to null, `2>/dev/null` 
+
+--version      Display the **versio**.
+
+-h --help       Display the **help**.
 
 ## USE
 
@@ -56,6 +62,10 @@ The options are as follows:
 
 The utility resizes each image using the same compression as the original image; however, specify the desination type using the `-t` directive. *srcset* permits the use of an image in TIFF format -- that is often the second step after Nikon, Canon and other 'raw' native formats -- from which `convert` can generate the final HTML-ready images. Or you can stick with the tried JPEG, PNG and GIF.
 
+The newly added Webp format is recommended since it offers both lossless and lossy compression in one convenient format. Google claims that its lossless images are 26% smaller that PNGs while its lossy images are 25-34% smaller than JPEGS at the same quality.
+
+ ##  FILE STRUCTURE 
+ 
 Due to the large number of resized images, they are organized into a file structure. The name of the directory matches the original filename. The name of each resized image contains the width of the image and placed into the directory from `320w` to `1440w`. The original file is copied, placed into the directory and renamed to `legacy`. Therefore, `srcset` will skip over any files named `legacy`, `320w`, `480w`,.... `1440w` to avoid duplicate work.
 
 For example, given an image named `my_image` the following directory will be constructed.
@@ -131,6 +141,8 @@ fn main() {
     let mut is_tagfile = true;
     let mut use_largest = true;
 
+    let mut is_version: bool = false;
+
     {
         let mut args = argparse::ArgumentParser::new();
 
@@ -203,9 +215,19 @@ fn main() {
                 .add_option(&["-l", "--largest"], argparse::StoreTrue,
                 "Scale to the largest size");
 
+        args.refer(&mut is_version)
+                .add_option(&["--version"], argparse::StoreTrue,
+                "Print version and exit");
+
         args.parse_args_or_exit();
     }
     
+
+    if is_version {
+        println!("srcset {}", env!("CARGO_PKG_VERSION"));
+        std::process::exit(1);        
+    }
+
     // Output must end in `/` so simply append one.
     if !outpath_str.ends_with("/") {  outpath_str.push_str("/"); }
 
