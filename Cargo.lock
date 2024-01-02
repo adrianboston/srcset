@@ -569,7 +569,7 @@ dependencies = [
 
 [[package]]
 name = "srcset"
-version = "0.8.1"
+version = "1.4.0"
 dependencies = [
  "anyhow",
  "argparse",
