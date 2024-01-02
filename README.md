@@ -46,13 +46,13 @@ The options are as follows:
 
 ## THE PROBLEM
 
-Generating multiple responsive images using Photoshop, Lightroom or other GUI application is an irksome task for opposable-thumbed humans. Further, the needed `<img>` tag referencing multiple images in the `srcset` attribute is long and tedious to generate. On the other hand, the *srcset* tool is a generator that can be be easily added into a automated build workflow. And that long `<img>` tag with the full set of `srcset` images is the standard output which can then be dropped into the target html file(s).
+Generating multiple responsive images using Photoshop, Lightroom or other GUI application is an irksome task even for opposable-thumbed humans. Further, the needed `<img>` tag referencing multiple images in the `srcset` attribute is long and tedious to generate. On the other hand, the *srcset* tool is a generator that can be be easily added into a automated build workflow. And that long `<img>` tag with the full set of `srcset` images is the standard output which can then be dropped into the target html file(s).
 
 ## BACKGROUND
 
-Images are important UI/UX aspects but usually the largest payload of a web site or page. As it turns out, speed is User Experience too. Google suggests that a web page load in under 3 seconds or users will abandon the site. Amazon correctly measures this in amount of dollars lost per second. With Mobile the situation is aggravated: the connection is slower and expensive; users are even more likely to abandon the site. As an extreme benchmark, Google.com comes in under 1.5 secs using [Web Page Test](https://www.webpagetest.org/) and costs **$** to view on Mobile. Anything above 10 secs is bad news. Boston Globe's Big Picture takes from 16 to 20 seconds and the cost is **$$$$$** for any Mobile user. ( Tested fom a Virigina EC2 machine). 
+Images are important UI/UX aspects but usually the largest payload of a web site or page. As it turns out, speed is User Experience too. Google suggests that a web page load in under 3 seconds or users will abandon the site. Amazon correctly measures this in amount of dollars lost per second. With Mobile the situation is aggravated: the connection is slower and expensive; users are even more likely to abandon the site. As an extreme benchmark, Google.com comes in under 1.5 secs using [Web Page Test](https://www.webpagetest.org/) and costs **$** to view on Mobile. Anything above 10 secs is bad news. Boston Globe's Big Picture takes from 16 to 20 seconds and the cost is **$$$$$** for a Mobile user. ( Tested fom a Virigina EC2 machine). 
 
-In comes the HTML5 `srcset` attribute to help, whether Mobile or desktop Web. The html `<img>` tag takes an optional set of images that should be scaled versions of the original. The Mobile or Web browser selects an image given its current width and resolution capabilities. 'srcset' recommends images that don't waste expensive Mobile bandwidth yet provide a image suitable for the device's resolution. In desktops the browser will select an image based on its browser current width (opposed to the device's full width since they are always full screen).
+In comes the HTML5 [srcset](https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images) attribute to help, whether Mobile or desktop Web. The html `<img>` tag takes an optional set of images that are [scaled versions](https://css-tricks.com/responsive-images-youre-just-changing-resolutions-use-srcset/) of the original. The Mobile or Web browser selects an image given its current width and resolution capabilities. 'srcset' recommends images that don't waste expensive Mobile bandwidth yet provide a image suitable for the device's resolution. In desktops the browser will select an image based on its browser current width (opposed to the device's width).
 
 In summary, the `srcset` attribute permits the use of an image that is not too big yet not too small. The `srcset` attribute is ignored and `src` is used in legacy browsers. Keep in mind that disk - for storing the extra images - is cheap and atemporal while both user's viewing period and network bandwith is measured in units of time.
 
@@ -126,6 +126,8 @@ Otherwise, Rust is easier to build from source than C/C++ projects. Dependencies
 
 - Then issue the Rust compiler build command: `cargo build --release`
 
+- The binary will be found at `./target/release/srcset`
+
 ** Make sure to build using the `--release` option; otherwise, the executable  will be very slow. Consider it similar to gcc optimization level.
 
 ### Useful Resources
@@ -136,6 +138,7 @@ Otherwise, Rust is easier to build from source than C/C++ projects. Dependencies
 - https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img
 - https://css-tricks.com/responsive-images-youre-just-changing-resolutions-use-srcset/
 - https://www.smashingmagazine.com/2015/06/efficient-image-resizing-with-imagemagick/
+- https://coderpad.io/blog/development/the-definitive-guide-to-responsive-images-on-the-web/
 
 ##### The recommended webp image format
 
