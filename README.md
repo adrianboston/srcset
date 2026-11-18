@@ -4,45 +4,33 @@
 
 ## SYNOPSIS
 
-`./srset [-rnvezh] [—t type] [-s sizes] [-q quality] [-u unsharpen] [-p prefix] [-o outpath] filename`
-
-`./srset [-rjnvezh] [—t type] [-s sizes] [-q quality] [-u unsharpen] [-p prefix] [-m min] [-o outpath] file hierarchy`
+`srcset [OPTIONS] <FILE_OR_DIRECTORY>`
 
 ## DESCRIPTION
 
-The srcset utility generates multiple scaled versions of an image at particular breakpoints -- the default is 480,640,768,960,1024,1366,1600 and 1920 pixels wide -- that match common Mobile and widescreen viewports and outputs the needed `<img>` tag.
+Pass an image file or directory. Directory traversal processes supported images larger than the minimum size; use `-r` to include subdirectories. The default output directory is `/tmp/srcset/` on Unix and `srcset` on Windows.
 
-A file path, whether filename or file hierarcy is required. Specify the path (file or file hierarchy) to generate images. The type of file path, whether file or file hierarchy is determined by **srcset**.
+| Option | Description |
+| --- | --- |
+| `-o`, `--out PATH` | Output directory. |
+| `-r`, `--recurse` | Recurse into subdirectories; ignored for a single file. |
+| `-t`, `--type TYPE` | Output format, such as `jpg`, `png`, or `webp`. Defaults to the input format. |
+| `-p`, `--prefix PREFIX` | Prefix for image paths in the generated `<img>` tag. |
+| `-s`, `--sizes SIZES` | Comma-separated widths; default `320,480,640,768,960,1024,1366,1600,1920`. |
+| `-m`, `--min KB` | Minimum file size for directory processing, in KiB; default `100`. Files must be larger than this value. Ignored for a single file. |
+| `-j`, `--job` | Process image sizes in parallel. |
+| `-n`, `--nested` | Preserve the input directory hierarchy under the output directory; ignored for a single file. |
+| `-z`, `--test` | Dry run: report paths and generate the tag without writing images or files. |
+| `-v`, `--verbose` | Print additional details. |
+| `-e`, `--quiet` | Suppress processing warnings. |
+| `-q`, `--quality QUALITY` | JPEG quality, 1–100; default `82`. |
+| `-u`, `--unsharpen SIGMA,THRESHOLD` | Set unsharpen parameters; default `0.25,8`. The current implementation discards the sharpened result, so this option has no effect on saved images. |
+| `-d`, `--notag` | Intended to disable the tag file, but currently has no effect: tags are printed and written by default. |
+| `-l`, `--largest` | Select the largest configured size. This is already the default, so the flag currently has no effect. Images smaller than that width are enlarged. |
+| `--version` | Print the version. Currently exits with status 1. |
+| `-h`, `--help` | Print help. |
 
-The options are as follows:
-
--r  --recurse   **recurse** the provided directory. ignored for single file.
-
--o  --out       The **output** directory for the resized image. defaults to `/tmp/srcset/`; windows its `srcset`
-
--t  --type      The **type** of image conversion (png, jpg, webp, ... ); defaults to the same type as the original image found in the input path.
-
--s  --size      The **sizes** for responsive images in comma,separated,value form; defaults to `480, 640, 768, 960, 1024, 1366, 1600, 1920`.
-
--q --quality    Quality with a value in the range 1-100 where 100 is the best; default is `82`. Only for jpegs.
-
--u  --unsharpen Unsharpen with a sigma float and threshold int; default is `0.25,8`.
-
--m  --min       Set the **minimum** size of image that will be processed; otherwise an image will be skipped. Ignored for single files. Specifed in Kilobytes. The default is `100` (aka  a min of `102400` bytes). 
-
--p --prefix     String prefix to the filenames within the <img/> tag, such as `/var/www/html/pics`.
-
--j  --jobs      Whether to use parallel threaded **jobs** on image conversion.
-
--n  --nest      Use a **nested** directory hierarchy on the output, otherwise it is flat. ignored for single file.
-
--z  --test      Run a test or **null** run. File paths are traversed but no images are generated and no new file path is created. The `<img>` markup will be generated to the console.
-
--v   --verbose  Use **verbose** output.
-
--e  --quiet     **quiet** the errors; functionaly the same as piping error to null, `2>/dev/null` 
-
--h --help       Display the **help**.
+Quote values containing spaces, for example `--sizes "320, 640, 1024"`.
 
 ## THE PROBLEM
 
@@ -78,7 +66,7 @@ The newly added Webp format is recommended since it offers both lossless and los
 
 ## FILE STRUCTURE
 
-Due to the large number of resized images, they are organized into a file structure. The name of the directory matches the original filename. The name of each resized image contains the width of the image and placed into the directory from `480w` to `1920w`. The original file is resized to the max size (1900w or smaller depending on original width), placed into the directory and renamed to `legacy`. Therefore, `srcset` will skip over any files named `legacy`, `480w`,.... `1920w` to avoid duplicate work. 
+Due to the large number of resized images, they are organized into a file structure. The name of the directory matches the original filename. The name of each resized image contains the width of the image and placed into the directory from `320w` to `1920w` by default. The original file is resized to the largest configured width (even if that enlarges it), placed into the directory and renamed to `legacy`. Therefore, `srcset` will skip over any files named `legacy`, `320w`,.... `1920w` to avoid duplicate work. 
 
 For clarification, given an image named `my_image` the following directory will be constructed.
 
@@ -101,7 +89,7 @@ $ srcset my_image.jpg
 The resulting tag is:
 
 ```
-<img src="my_image/legacy.JPG" srcset="my_image/480w.JPG 480w, my_image/640w.JPG 640w, my_image/768w.JPG 768w, my_image/960w.JPG 960w, my_image/1024w.JPG 1024w, my_image/1366w.JPG 1366w, my_image/1600w.JPG 1600w. my_image/1920w.JPG 1920w" sizes="(min-width: 768px) 50vw, 100vw" alt="A file named my_image">
+<img src="my_image/legacy.JPG" srcset="my_image/320w.JPG 320w, my_image/480w.JPG 480w, my_image/640w.JPG 640w, my_image/768w.JPG 768w, my_image/960w.JPG 960w, my_image/1024w.JPG 1024w, my_image/1366w.JPG 1366w, my_image/1600w.JPG 1600w. my_image/1920w.JPG 1920w" sizes="(min-width: 768px) 50vw, 100vw" alt="A file named my_image">
 ```
 
 ## ERRORS AND WARNINGS
@@ -110,25 +98,45 @@ Note that warnings / errors can be piped into a file. The most common warning is
 
 `srcset -r /root 2>srcset.err`
 
-## BUILD COMPILE
+## BUILD, INSTALL, AND TEST
 
-Consider using the Mac OSX DMG for those of you on OSX and without the rust compiler. See the [release section](https://github.com/adrianboston/srcset/releases). Open the DMG and copy the executable to the `/urs/local/bin` directory if desired. 
+Install Rust and Cargo using the [Rust installation instructions](https://www.rust-lang.org/tools/install), then clone the project and build the optimized executable:
 
-Otherwise, Rust is easier to build from source than C/C++ projects. Dependencies are pulled in very smoothly; it seems to work without hiccups. 
+```sh
+git clone https://github.com/adrianboston/srcset.git
+cd srcset
+make
+```
 
-- Get the Rust compiler. Follow the instructions on https://www.rust-lang.org/tools/install
+The executable is at `target/release/srcset`. `make` uses `cargo build --release`; the optimized build is recommended for image processing.
 
-- Git this project. `git clone https://github.com/adrianboston/srcset.git`
+### Install
 
-- Open terminal and nagivate to the root directory. `cd srcset`
+On macOS or Linux, install the release executable to `/usr/local/bin/srcset` with:
 
-- Set the desired encodings in Cargo.toml or stick with the `default = ["jpeg", "png", "tiff", "gif", "webp", "webp-encoder"]`
+```sh
+sudo make install
+```
 
-- Then issue the Rust compiler build command: `cargo build --release`
+The install target builds the release executable first and overwrites an existing executable at that path. To use a different installation prefix, set `PREFIX`; for example, `make install PREFIX="$HOME/.local"` installs to `~/.local/bin/srcset`.
 
-- The binary will be found at `./target/release/srcset`
+### Test
 
-** Make sure to build using the `--release` option; otherwise, the executable  will be very slow. Consider it similar to gcc optimization level.
+Run the sample image conversions with:
+
+```sh
+make test
+```
+
+This runs `make test-tmp`, which performs real conversions using the two sample TIFF images. You can also invoke it directly:
+
+```sh
+make test-tmp
+```
+
+This writes JPEG and PNG images and their `srcset.txt` files under `/tmp/srcset-make-test`. Repeated runs overwrite matching output files. Files in `/tmp` may be removed by the operating system.
+
+Run the Rust test suite separately with `cargo test`.
 
 ### Useful Resources
 

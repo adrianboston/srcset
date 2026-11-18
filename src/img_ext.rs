@@ -42,10 +42,6 @@ pub trait ImgExt {
     fn save_with_quality<Q>(&self, path: Q, quality: u8) -> ImageResult<()>
     where
         Q: AsRef<Path>;
-
-    fn save_safe_with_quality<Q>(&self, path: Q, quality: u8) -> ImageResult<()>
-        where
-            Q: AsRef<Path>;        
 }
 
 
@@ -58,22 +54,6 @@ impl ImgExt for image::DynamicImage {
     fn save_with_quality<Q>(&self, path: Q, quality: u8) -> ImageResult<()>
     where
         Q: AsRef<Path>,
-    {
-        let color = self.color();
-        // This is valid as the subpixel is u8.
-        save_buffer_with_quality(
-            path.as_ref(),
-            self.as_bytes(),
-            self.width(),
-            self.height(),
-            color,
-            quality
-        )
-    }
-
-    fn save_safe_with_quality<Q>(&self, path: Q, quality: u8) -> ImageResult<()>
-        where
-            Q: AsRef<Path>,
     {
         let format =  ImageFormat::from_path(&path)?;
 

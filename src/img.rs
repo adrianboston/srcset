@@ -75,8 +75,7 @@ pub fn process_image(path: &Path, opts: &Opts, m: &mut Metrics) -> Result<()>
 
         mk_dir(&np);
         //legacy_img.save(&np)?;
-        //legacy_img.save_with_quality(&np, opts.quality)?;
-        legacy_img.save_safe_with_quality(&np, opts.quality)?;
+        legacy_img.save_with_quality(&np, opts.quality)?;
 
         if opts.is_verbose {print_image_details(&legacy_img, &np)}
 
@@ -185,8 +184,7 @@ pub fn scale_and_save(path: &Path, outpath: &Path,
 
         
         //scaled.save(&img_path)?;
-        //scaled.save_with_quality(&img_path, opts.quality)?;
-        scaled.save_safe_with_quality(&img_path, opts.quality)?;
+        scaled.save_with_quality(&img_path, opts.quality)?;
 
 
         if opts.is_verbose {print_image_details(&scaled, &img_path)}

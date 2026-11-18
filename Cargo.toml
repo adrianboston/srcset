@@ -41,5 +41,6 @@ webp = []
 webp-encoder = []
 farbfeld = []
 avif-encoder = []
+avif-decoder = ["image/avif-decoder"]
 
 

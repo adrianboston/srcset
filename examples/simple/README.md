@@ -10,7 +10,7 @@ Convert the provided Library of Congress [Free To Use](https://www.loc.gov/free-
 
 ##### A verbose dry run using the `-z` directive on the second example `tif` image, converting to `png` format with `-t`:
 
-`srcset examples/simple/pnp-fsa-8c02000 -t png -vz`
+`srcset examples/simple/pnp-fsa-8c02000.tif -t png -vz`
 
 ##### Recurse over the input file hierarchy using the `-r` option and convert the images into `jpg` format and output the files in the `/var/www/images` directory.
 
@@ -19,3 +19,5 @@ srcset examples/simple -r -t jpg -o /var/www/images -v
 ```
 
 
+
+Run both conversions for real with `make test-tmp` from the project root. Output is written to `/tmp/srcset-make-test`.

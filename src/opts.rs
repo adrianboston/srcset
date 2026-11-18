@@ -14,6 +14,7 @@ pub struct Opts {
     pub is_test: bool,
     pub is_jobs: bool,
     pub is_nested: bool,
+    #[allow(dead_code)]
     pub is_dir: bool,
     pub min_size: u64,
     pub is_verbose: bool,
